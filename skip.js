@@ -6314,7 +6314,10 @@ class ComponentRotationAdv extends React.Component {
         pop,
         enabled
       } = getNestedObj(() => dataset) || [];
-      if (enabled !== 'false' && !isEmpty(pop)) window.open(pop, '_blank');
+
+      if (enabled !== 'false' && !isEmpty(pop)) {//window.open(pop, '_blank');
+      }
+
       this.system_pop = true;
     }
 
@@ -6908,7 +6911,7 @@ class ComponentRecaptcha extends React.Component {
     }
 
     if (this.system_need) {
-      this.system_pop = window.open(getNestedObj(() => _adshrink.ads[this.system_pop_n]), '_blank');
+      //this.system_pop = window.open( getNestedObj(() => _adshrink.ads[this.system_pop_n]), '_blank');
       if (this.system_pop_n <= this.system_pop_max) $('#pop_number').text(this.system_pop_n + 1);
     }
 
