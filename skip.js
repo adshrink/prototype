@@ -9455,7 +9455,7 @@ class SemanticNavContent extends React.Component {
       className: "share icon"
     }), " ", language.new.share, " "))), /*#__PURE__*/React.createElement("div", {
       className: "five wide column middle aligned center aligned"
-    }, window.iab_rejected && type && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    }, window.iab_rejected && type && !adblock && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
       className: "ui yellow floating message"
     }, /*#__PURE__*/React.createElement("p", null, " ", /*#__PURE__*/React.createElement("i", {
       className: "adversal icon"
