@@ -9074,6 +9074,8 @@ class SemanticNavContent extends React.Component {
     });
 
     _defineProperty(this, "on_iab_rej", () => {
+      console.warn('on_iab_rej', window.iab_rejected);
+
       if (window.iab_rejected) {
         OneTrust.AllowAll();
         window.location.reload();
