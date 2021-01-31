@@ -11018,6 +11018,7 @@ class Prototype extends React.Component {
 
 }
 
+
 ReactDOM.render( /*#__PURE__*/React.createElement(Prototype, {
   dynamic: window.dynamic,
   timerStart: window.timerStart,
