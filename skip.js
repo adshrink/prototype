@@ -9073,6 +9073,15 @@ class SemanticNavContent extends React.Component {
       }), language.new.support));
     });
 
+    _defineProperty(this, "on_iab_rej", () => {
+      this.forceUpdate();
+
+      if (window.iab_rejected) {
+        OneTrust.AllowAll();
+        window.location.reload();
+      }
+    });
+
     this.state = {
       user: [],
       oauth: [],
@@ -9454,10 +9463,7 @@ class SemanticNavContent extends React.Component {
         marginBottom: "10px",
         backgroundColor: "#13dc74"
       },
-      onClick: () => {
-        OneTrust.AllowAll();
-        window.location.reload();
-      }
+      onClick: () => this.on_iab_rej()
     }, "Allow and reload ", /*#__PURE__*/React.createElement("i", {
       className: "recycle icon"
     }), " ")), !isEmpty(data) && !mode && type !== 'Exclusive' && !window.iab_rejected && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
