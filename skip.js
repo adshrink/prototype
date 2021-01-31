@@ -9074,11 +9074,11 @@ class SemanticNavContent extends React.Component {
     });
 
     _defineProperty(this, "on_iab_rej", () => {
-      this.forceUpdate();
-
       if (window.iab_rejected) {
         OneTrust.AllowAll();
         window.location.reload();
+      } else {
+        this.forceUpdate();
       }
     });
 
