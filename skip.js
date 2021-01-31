@@ -9489,11 +9489,11 @@ class SemanticNavContent extends React.Component {
       type: type,
       skip: skip,
       url: url
-    }), adblock && type !== 'Exclusive' && !window.iab_rejected && /*#__PURE__*/React.createElement("div", {
+    }), !window.iab_rejected && adblock && type !== 'Exclusive' && /*#__PURE__*/React.createElement("div", {
       className: "ui red floating message"
     }, /*#__PURE__*/React.createElement("p", null, " ", /*#__PURE__*/React.createElement("i", {
       className: "minus circle icon"
-    }), " Please disable your ad blocker and reload!")), type === 'Exclusive' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    }), " Please disable your ad blocker and reload!")), !window.iab_rejected && type === 'Exclusive' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
       className: "ui red floating message"
     }, /*#__PURE__*/React.createElement("p", null, " ", /*#__PURE__*/React.createElement("i", {
       className: "minus circle icon"
