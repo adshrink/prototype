@@ -9456,10 +9456,10 @@ class SemanticNavContent extends React.Component {
     }), " ", language.new.share, " "))), /*#__PURE__*/React.createElement("div", {
       className: "five wide column middle aligned center aligned"
     }, window.iab_rejected && type && !adblock && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-      className: "ui yellow floating message"
+      className: "ui red floating message"
     }, /*#__PURE__*/React.createElement("p", null, " ", /*#__PURE__*/React.createElement("i", {
       className: "adversal icon"
-    }), " Accept data processing and all cookies")), /*#__PURE__*/React.createElement("button", {
+    }), " Accept data processing and disable your ad blocker")), /*#__PURE__*/React.createElement("button", {
       className: "ui right labeled icon button primary huge fluid",
       style: {
         marginBottom: "10px",
@@ -9489,7 +9489,7 @@ class SemanticNavContent extends React.Component {
       type: type,
       skip: skip,
       url: url
-    }), adblock && type !== 'Exclusive' && /*#__PURE__*/React.createElement("div", {
+    }), adblock && type !== 'Exclusive' && !window.iab_rejected && /*#__PURE__*/React.createElement("div", {
       className: "ui red floating message"
     }, /*#__PURE__*/React.createElement("p", null, " ", /*#__PURE__*/React.createElement("i", {
       className: "minus circle icon"
