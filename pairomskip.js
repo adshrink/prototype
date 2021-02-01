@@ -38,7 +38,7 @@ var _adshrink = {
   overpoprec: 'https://google.com/',
   ads: ['https://y0urf1rstd0wnl0ad.com/6KrwXabc0f283206bdc30d872e476cf9bfd281e1d1234?q=', 'https://b3stcond1tions.com/xarlO7c98b854474b279e2ea824a8798d9a525035d897?q=', 'https://azpresearch.club/redirect?tid=910433', 'https://t.acam.link/166218/3688/0?bo=2779,2778,2777,2776,2775&po=6533'],
   skippop: 'https://google.com/',
-  iframe: 'https://mightreservoir.com/pdyx0jg9mf?key=b75bde042f0cdde92a2bb56119b2512a',
+  iframe: 'https://pt.potawe.com/pu/fs?ms_rnd=1612197287.33174&pstool=300_17&site=jsm&psid=technicsp&psprogram=revs&campaign_id=&width=1100&height=800&cap=24&preview=&categoryName=girl&subAffId=%7BSUBAFFID%7D&origin=www.awempire.com',
   skiptime: 30,
   adsense: 'automatic',
   push: 'automatic',
