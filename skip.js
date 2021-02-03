@@ -1156,12 +1156,74 @@ const detectLangStorage = !isEmpty(window.localStorage.getItem('language')) ? wi
 
 var language = ___reactjsD.language['en'];
 document.head || (document.head = document.getElementsByTagName('head')[0]);
+window.iab_rejected = true; //OneTrust.getVendorConsentsRequestV2((e) => { console.log(e) })
+
+async function check_user_iab_permissions() {
+  if (!window.__tcfapi) return false;
+
+  window.__tcfapi('addEventListener', 2, function (tcData, listenerSuccess) {
+    console.info('IAB', tcData, listenerSuccess);
+    if (!listenerSuccess) return false;
+
+    if (tcData.eventStatus === 'tcloaded' || tcData.eventStatus === 'useractioncomplete') {
+      if (!tcData.gdprApplies) {
+        // GDPR DOES NOT APPLY, UnpauseAdRequests
+        // Set request non-personalized ads to false as GDPR does not apply.
+        (adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds = 0; // Unpause ads, as GDPR does not apply.
+
+        (adsbygoogle = window.adsbygoogle || []).pauseAdRequests = 0;
+        ga('send', 'event', 'TCF-2.0', 'prototype', '!gdpr', 100);
+        window.iab_rejected = false;
+      } else {
+        // GDPR DOES APPLY
+        // Purpose 1 refers to the storage and/or access of information on a device.
+        let hasDeviceStorageAndAccessConsent = getNestedObj(() => tcData.purpose.consents[1]); // Google Requires Consent for Purpose 1
+
+        if (hasDeviceStorageAndAccessConsent) {
+          // GLOBAL VENDOR LIST - https://iabeurope.eu/vendor-list-tcf-v2-0/
+          // CHECK FOR GOOGLE ADVERTISING PRODUCTS CONSENT. (IAB Vendor ID 755)
+          let hasGoogleAdvertisingProductsConsent = getNestedObj(() => tcData.vendor.consents[755]); // Check if the user gave Google Advertising Products consent (iab vendor 755)
+
+          if (hasGoogleAdvertisingProductsConsent) {
+            let hasPersonalizedProfileConsent = getNestedObj(() => tcData.purpose.consents[3]);
+            let hasPersonalizedAdsConsent = getNestedObj(() => tcData.purpose.consents[4]); // Check if have add personalization consent Purpose 3 and 4
+
+            if (hasPersonalizedAdsConsent && hasPersonalizedProfileConsent) {
+              // Set request non-personalized ads to false.
+              (adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds = 0;
+              console.warn('user-allow-cmp-tcf-2.0', 'google', hasGoogleAdvertisingProductsConsent, 'ppc', hasGoogleAdvertisingProductsConsent, 'pac', hasPersonalizedAdsConsent);
+              ga('send', 'event', 'TCF-2.0', 'prototype', 'user-allow-cmp-tcf-2.0-google', 100);
+              window.iab_rejected = false;
+            } else {
+              // Set request non-personalized ads to true.
+              (adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds = 1;
+              console.warn('user-reject-cmp-tcf-2.0', 'google', hasGoogleAdvertisingProductsConsent, 'ppc', hasGoogleAdvertisingProductsConsent, 'pac', hasPersonalizedAdsConsent);
+              ga('send', 'event', 'TCF-2.0', 'prototype', 'user-reject-cmp-tcf-2.0-google', 20);
+            } // Unpause ads , the user has granted consent for purpose 1 and given google consent.
+
+
+            (adsbygoogle = window.adsbygoogle || []).pauseAdRequests = 0;
+          } else {
+            console.warn('user-reject-cmp-tcf-2.0-google');
+            ga('send', 'event', 'TCF-2.0', 'prototype', 'user-reject-cmp-tcf-2.0-google', 10);
+            window.iab_rejected = true;
+          }
+        } else {
+          console.warn('user-reject-cmp-tcf-2.0');
+          ga('send', 'event', 'TCF-2.0', 'prototype', 'user-reject-cmp-tcf-2.0', 0);
+          window.iab_rejected = true;
+        }
+      }
+    }
+  });
+}
 /**
  * Deep diff between two object, using lodash
  * @param  {Object} object Object compared
  * @param  {Object} base   Object to compare with
  * @return {Object}        Return a new object who represent the diff
  */
+
 
 function difference(object, base) {
   function changes(object, base) {
@@ -9000,6 +9062,7 @@ class SemanticNavContent extends React.Component {
 
     _defineProperty(this, "select_mode", async selected => {
       let adblock = await checkAdBlocker();
+      let iab = await check_user_iab_permissions();
       let tcf = window.iab_rejected;
 
       if (adblock) {
@@ -9073,8 +9136,8 @@ class SemanticNavContent extends React.Component {
       }), language.new.support));
     });
 
-    _defineProperty(this, "on_iab_rej", () => {
-      console.warn('on_iab_rej', window.iab_rejected);
+    _defineProperty(this, "on_iab_rej", async () => {
+      let iab = await check_user_iab_permissions();
 
       if (window.iab_rejected) {
         OneTrust.AllowAll();
@@ -9455,7 +9518,7 @@ class SemanticNavContent extends React.Component {
       className: "share icon"
     }), " ", language.new.share, " "))), /*#__PURE__*/React.createElement("div", {
       className: "five wide column middle aligned center aligned"
-    }, window.iab_rejected && type && !adblock && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    }, window.iab_rejected && type && !adblock && type !== 'Exclusive' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
       className: "ui red floating message"
     }, /*#__PURE__*/React.createElement("p", null, " ", /*#__PURE__*/React.createElement("i", {
       className: "adversal icon"
@@ -9983,65 +10046,6 @@ class Prototype extends React.Component {
           });
           window.Sharer.init();
         }
-
-        window.iab_rejected = true;
-        $(document).ready(() => {
-          if (!window.__tcfapi) return false;
-
-          window.__tcfapi('addEventListener', 2, function (tcData, listenerSuccess) {
-            console.info('IAB', tcData, listenerSuccess);
-            if (!listenerSuccess) return false;
-
-            if (tcData.eventStatus === 'tcloaded' || tcData.eventStatus === 'useractioncomplete') {
-              if (!tcData.gdprApplies) {
-                // GDPR DOES NOT APPLY, UnpauseAdRequests
-                // Set request non-personalized ads to false as GDPR does not apply.
-                (adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds = 0; // Unpause ads, as GDPR does not apply.
-
-                (adsbygoogle = window.adsbygoogle || []).pauseAdRequests = 0;
-                ga('send', 'event', 'TCF-2.0', 'prototype', '!gdpr', 100);
-                window.iab_rejected = false;
-              } else {
-                // GDPR DOES APPLY
-                // Purpose 1 refers to the storage and/or access of information on a device.
-                let hasDeviceStorageAndAccessConsent = getNestedObj(() => tcData.purpose.consents[1]); // Google Requires Consent for Purpose 1
-
-                if (hasDeviceStorageAndAccessConsent) {
-                  // GLOBAL VENDOR LIST - https://iabeurope.eu/vendor-list-tcf-v2-0/
-                  // CHECK FOR GOOGLE ADVERTISING PRODUCTS CONSENT. (IAB Vendor ID 755)
-                  let hasGoogleAdvertisingProductsConsent = getNestedObj(() => tcData.vendor.consents[755]); // Check if the user gave Google Advertising Products consent (iab vendor 755)
-
-                  if (hasGoogleAdvertisingProductsConsent) {
-                    let hasPersonalizedProfileConsent = getNestedObj(() => tcData.purpose.consents[3]);
-                    let hasPersonalizedAdsConsent = getNestedObj(() => tcData.purpose.consents[4]); // Check if have add personalization consent Purpose 3 and 4
-
-                    if (hasPersonalizedAdsConsent && hasPersonalizedProfileConsent) {
-                      // Set request non-personalized ads to false.
-                      (adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds = 0;
-                      console.warn('user-allow-cmp-tcf-2.0', 'google', hasGoogleAdvertisingProductsConsent, 'ppc', hasGoogleAdvertisingProductsConsent, 'pac', hasPersonalizedAdsConsent);
-                      ga('send', 'event', 'TCF-2.0', 'prototype', 'user-allow-cmp-tcf-2.0-google', 100);
-                      window.iab_rejected = false;
-                    } else {
-                      // Set request non-personalized ads to true.
-                      (adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds = 1;
-                      console.warn('user-reject-cmp-tcf-2.0', 'google', hasGoogleAdvertisingProductsConsent, 'ppc', hasGoogleAdvertisingProductsConsent, 'pac', hasPersonalizedAdsConsent);
-                      ga('send', 'event', 'TCF-2.0', 'prototype', 'user-reject-cmp-tcf-2.0-google', 20);
-                    } // Unpause ads , the user has granted consent for purpose 1 and given google consent.
-
-
-                    (adsbygoogle = window.adsbygoogle || []).pauseAdRequests = 0;
-                  } else {
-                    console.warn('user-reject-cmp-tcf-2.0-google');
-                    ga('send', 'event', 'TCF-2.0', 'prototype', 'user-reject-cmp-tcf-2.0-google', 10);
-                  }
-                } else {
-                  console.warn('user-reject-cmp-tcf-2.0');
-                  ga('send', 'event', 'TCF-2.0', 'prototype', 'user-reject-cmp-tcf-2.0', 0);
-                }
-              }
-            }
-          });
-        });
       } catch (error) {
         console.warn('sticky-ads-error-scroll');
       }
@@ -10503,7 +10507,7 @@ class Prototype extends React.Component {
     });
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     console.log('-PROTOTYPE-', this.props);
     delete axios.defaults.headers.common['Authorization'];
     let that = this;
@@ -10516,17 +10520,12 @@ class Prototype extends React.Component {
     let loaded_interval = setInterval(function () {
       let _script_loaded = getNestedObj(() => that.state.loaded) || false;
 
-      let neededscript = 0;
-
       if (!_script_loaded) {
-        Object.keys(window.loaded_script).map(elem => {
-          let loaded_ = window.loaded_script[elem] || false;
-          if (loaded_) neededscript++;
-          if (neededscript === 14) that.setState({
-            loaded: true,
-            componentLoaded: true
-          });
+        if (window.labjs_scripts) that.setState({
+          loaded: true,
+          componentLoaded: true
         });
+        check_user_iab_permissions();
       } else {
         try {
           clearInterval(loaded_interval);
@@ -10534,7 +10533,7 @@ class Prototype extends React.Component {
           console.warn('interval-cleared');
         }
       }
-    }, 500); //this.setState({componentLoaded: true})
+    }, 333); //this.setState({componentLoaded: true})
   }
 
   propsInitData(from = 'props', idata = null) {
@@ -10779,8 +10778,7 @@ class Prototype extends React.Component {
       //$('title').text("Shorten urls and earn money - AdShrink.it");
 
 
-      changeFavicon('https://www.shrink-service.it/ico/favicons.png');
-      if (!that.state.script.donate) that.onScriptLoad('donate', 'https://blockchain.info/Resources/js/pay-now-button.js'); //RedirectCom()
+      changeFavicon('https://www.shrink-service.it/ico/favicons.png'); //RedirectCom()
 
       if (!that.system_popup_bounduary_steps) {
         $('#system_popup_steps_trigger').popup({
@@ -10910,11 +10908,9 @@ class Prototype extends React.Component {
       size: 'leaderboard'
     }), form_factor === 'Tablet' && /*#__PURE__*/React.createElement(AdsenseBanner, {
       size: 'leaderboard'
-    }), form_factor === 'Smartphone' && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(AdsenseBanner, {
-      size: 'medium_rectangle'
-    }), /*#__PURE__*/React.createElement(AdsenseBanner, {
-      size: 'medium_rectangle'
-    }))), form_factor === 'Smartphone' && /*#__PURE__*/React.createElement(ComponentStaticStepsMessages, null), /*#__PURE__*/React.createElement(SemanticNavContent, {
+    }), form_factor === 'Smartphone' && /*#__PURE__*/React.createElement(AdsenseBanner, {
+      size: 'half_page'
+    })), form_factor === 'Smartphone' && /*#__PURE__*/React.createElement(ComponentStaticStepsMessages, null), /*#__PURE__*/React.createElement(SemanticNavContent, {
       dev: form_factor,
       data: data,
       type: type,
@@ -10960,18 +10956,6 @@ class Prototype extends React.Component {
     }, /*#__PURE__*/React.createElement("div", {
       className: "sixteen wide column"
     }, /*#__PURE__*/React.createElement(ComponentFirstInfoSegment, null)), /*#__PURE__*/React.createElement("div", {
-      className: "sixteen wide column"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "ui divider"
-    })), /*#__PURE__*/React.createElement("div", {
-      className: "sixteen wide column center aligned " + (form_factor === 'Desktop' || form_factor === 'Tablet' ? 'margin-large' : 'margin-mobile')
-    }, form_factor === 'Desktop' && /*#__PURE__*/React.createElement(AdsenseBanner, {
-      size: 'leaderboard'
-    }), form_factor === 'Tablet' && /*#__PURE__*/React.createElement(AdsenseBanner, {
-      size: 'leaderboard'
-    }), form_factor === 'Smartphone' && /*#__PURE__*/React.createElement(AdsenseBanner, {
-      size: 'medium_rectangle'
-    })), /*#__PURE__*/React.createElement("div", {
       className: "sixteen wide column"
     }, /*#__PURE__*/React.createElement("div", {
       className: "ui divider"
