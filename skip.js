@@ -13,11 +13,13 @@ var _adshrink = {
   adsense: 'automatic',
   push: 'automatic',
   enabled: {
+    publift: true,
     skip: false,
     adsense: true,
     iframe: true,
     premium: true,
-    infeed: false
+    infeed: false,
+    firstpage: true
   },
   instagram: 'https://www.instagram.com/adshrink.it',
   facebook: 'https://www.facebook.com/shrinkservice/',
@@ -27,12 +29,16 @@ var _adshrink = {
     capub: 'ca-pub-2276573333169602',
     formats: {
       square: '2423378975',
+      squareresponsive: '8438770752',
       sky: '9129206360',
+      skyresponsive: '8665807943',
       leaderboard: '3765989031',
       plotly: '1824892416',
       infeed: '5406373761'
     }
-  }
+  },
+  premiumpage: 'https://www.shrink-service.it/v2/public/auth?username=',
+  paywall: 'https://adshrink.it/btc.php?quantity=10'
 };
 var _scripts = {};
 var ___freeadsusers = [31419, 1];
@@ -44,7 +50,8 @@ var ___reactjsD = {
   website: 'Adshrink.it',
   pk_recaptcha: '6LeFh8EUAAAAAAWEtxVi2JxofMaUw2t6ozKSDooK',
   pk3_recaptcha: '6LehwHIUAAAAAEKVRyQhtd0aeBh307y5Cm9jdamY',
-  verification_recaptcha: 'https://adshrink.it/recaptcha.php',
+  verification_recaptcha: 'https://www.shrink-service.it/recaptcha.php',
+  favicon: 'https://www.google.com/s2/favicons?sz=64&domain_url=',
   auth2: false,
   enabled_runative_banner_bottom: false,
   enabled_taboola_mobile: true,
@@ -1156,6 +1163,74 @@ const detectLangStorage = !isEmpty(window.localStorage.getItem('language')) ? wi
 
 var language = ___reactjsD.language['en'];
 document.head || (document.head = document.getElementsByTagName('head')[0]);
+<<<<<<< Updated upstream
+=======
+window.iab_rejected = true; //OneTrust.getVendorConsentsRequestV2((e) => { console.log(e) })
+
+async function check_user_iab_permissions(get = false) {
+  if (!window.__tcfapi) return false;
+  await window.__tcfapi(get ? 'getTCData' : 'addEventListener', 2, function (tcData, listenerSuccess) {
+    console.info('IAB', tcData, listenerSuccess);
+
+    if (!listenerSuccess) {
+      window.iab_listenersuccess_false = true;
+      return false;
+    }
+
+    if (tcData.eventStatus === 'tcloaded' || tcData.eventStatus === 'useractioncomplete') {
+      if (!tcData.gdprApplies) {
+        // GDPR DOES NOT APPLY, UnpauseAdRequests
+        // Set request non-personalized ads to false as GDPR does not apply.
+        (adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds = 0; // Unpause ads, as GDPR does not apply.
+
+        (adsbygoogle = window.adsbygoogle || []).pauseAdRequests = 0;
+        ga('send', 'event', 'TCF-2.0', 'prototype', '!gdpr', 100);
+        window.iab_rejected = false;
+      } else {
+        // GDPR DOES APPLY
+        // Purpose 1 refers to the storage and/or access of information on a device.
+        let hasDeviceStorageAndAccessConsent = getNestedObj(() => tcData.purpose.consents[1]); // Google Requires Consent for Purpose 1
+
+        if (hasDeviceStorageAndAccessConsent) {
+          // GLOBAL VENDOR LIST - https://iabeurope.eu/vendor-list-tcf-v2-0/
+          // CHECK FOR GOOGLE ADVERTISING PRODUCTS CONSENT. (IAB Vendor ID 755)
+          let hasGoogleAdvertisingProductsConsent = getNestedObj(() => tcData.vendor.consents[755]); // Check if the user gave Google Advertising Products consent (iab vendor 755)
+
+          if (hasGoogleAdvertisingProductsConsent) {
+            let hasPersonalizedProfileConsent = getNestedObj(() => tcData.purpose.consents[3]);
+            let hasPersonalizedAdsConsent = getNestedObj(() => tcData.purpose.consents[4]); // Check if have add personalization consent Purpose 3 and 4
+
+            if (hasPersonalizedAdsConsent && hasPersonalizedProfileConsent) {
+              // Set request non-personalized ads to false.
+              (adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds = 0;
+              console.warn('user-allow-cmp-tcf-2.0', 'google', hasGoogleAdvertisingProductsConsent, 'ppc', hasGoogleAdvertisingProductsConsent, 'pac', hasPersonalizedAdsConsent);
+              ga('send', 'event', 'TCF-2.0', 'prototype', 'user-allow-cmp-tcf-2.0-google', 100);
+              window.iab_rejected = false;
+            } else {
+              // Set request non-personalized ads to true.
+              (adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds = 1;
+              console.warn('user-reject-cmp-tcf-2.0', 'google', hasGoogleAdvertisingProductsConsent, 'ppc', hasGoogleAdvertisingProductsConsent, 'pac', hasPersonalizedAdsConsent);
+              ga('send', 'event', 'TCF-2.0', 'prototype', 'user-reject-cmp-tcf-2.0-google', 20);
+              window.iab_rejected = true; //window.__tcfapi('displayConsentUi',2, function() {});
+            } // Unpause ads , the user has granted consent for purpose 1 and given google consent.
+
+
+            (adsbygoogle = window.adsbygoogle || []).pauseAdRequests = 0;
+          } else {
+            console.warn('user-reject-cmp-tcf-2.0-google');
+            ga('send', 'event', 'TCF-2.0', 'prototype', 'user-reject-cmp-tcf-2.0-google', 10);
+            window.iab_rejected = true; //window.__tcfapi('displayConsentUi',2, function() {});
+          }
+        } else {
+          console.warn('user-reject-cmp-tcf-2.0');
+          ga('send', 'event', 'TCF-2.0', 'prototype', 'user-reject-cmp-tcf-2.0', 0);
+          window.iab_rejected = true; //window.__tcfapi('displayConsentUi',2, function() {});
+        }
+      }
+    }
+  });
+}
+>>>>>>> Stashed changes
 /**
  * Deep diff between two object, using lodash
  * @param  {Object} object Object compared
@@ -1554,8 +1629,10 @@ function Logo(props) {
     href: props.url,
     target: "_blank"
   }, /*#__PURE__*/React.createElement("img", {
+    alt: "logo",
+    className: "lazy",
     height: "55",
-    src: props.logo
+    "data-src": props.logo
   }));
 }
 
@@ -1716,7 +1793,9 @@ function HoriziontalCards(props) {
       padding: "15px 0px 15px 15px"
     }
   }, /*#__PURE__*/React.createElement("img", {
-    src: props.dev === 'Smartphone' ? props.fimage : props.image
+    alt: props.title,
+    className: "lazy",
+    "data-src": props.dev === 'Smartphone' ? props.fimage : props.image
   })), /*#__PURE__*/React.createElement("div", {
     className: "content",
     style: {
@@ -1737,6 +1816,41 @@ function HoriziontalCards(props) {
       __html: props.excerpt
     }
   }))))));
+}
+
+function SemanticCard(props) {
+  let user = props.user || false;
+
+  let get_data = property => {
+    return $('meta[property="' + property + '"]').attr('content');
+  };
+
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ui card",
+    style: {
+      margin: "0 auto"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "content"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "right floated meta"
+  }, moment(get_data('article:published_time')).fromNow()), /*#__PURE__*/React.createElement("img", {
+    className: "ui avatar image lazy",
+    "data-src": "https://adshrink.it/wp-content/uploads/apps/nouser.jpg"
+  }), " ", user ? user : 'Private user', /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("b", null, get_data('og:title')))), /*#__PURE__*/React.createElement("div", {
+    className: "image"
+  }, /*#__PURE__*/React.createElement("img", {
+    className: "lazy",
+    "data-src": get_data('og:image')
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "content"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "right floated"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "heart outline like icon"
+  }), "99+ likes"), /*#__PURE__*/React.createElement("i", {
+    className: "comment icon"
+  }), "10+ comments", /*#__PURE__*/React.createElement("br", null), get_data('og:description')));
 }
 
 class WpCards extends React.Component {
@@ -1770,18 +1884,55 @@ class WpCards extends React.Component {
         let post_thumb = getNestedObj(() => _embedded['wp:featuredmedia'][0].media_details.sizes.thumbnail.source_url);
         let post_image = getNestedObj(() => _embedded['wp:featuredmedia'][0].source_url);
         post_excerpt = post_excerpt.substr(0, 175) + " [...]";
+        slug = slug.substr(0, 50) + " [...]";
+        /*
+        html.push(
+            <div key={elem} className="eight wide column item" >
+                <HoriziontalCards dev={dev} fimage={post_image} image={post_thumb} title={post_title} excerpt={post_excerpt} slug={slug} link={link}/>
+            </div>
+        );
+        */
+
         html.push( /*#__PURE__*/React.createElement("div", {
           key: elem,
           className: "eight wide column item"
-        }, /*#__PURE__*/React.createElement(HoriziontalCards, {
-          dev: dev,
-          fimage: post_image,
-          image: post_thumb,
-          title: post_title,
-          excerpt: post_excerpt,
-          slug: slug,
-          link: link
-        })));
+        }, /*#__PURE__*/React.createElement("div", {
+          className: "ui basic segment"
+        }, /*#__PURE__*/React.createElement("div", {
+          key: elem,
+          className: "ui card " + (dev === 'Smartphone' ? '' : 'horizontal')
+        }, /*#__PURE__*/React.createElement("div", {
+          alt: post_title,
+          className: "image",
+          style: dev === 'Smartphone' ? {
+            width: "100%"
+          } : {
+            height: "180px",
+            width: "180px"
+          }
+        }, /*#__PURE__*/React.createElement("img", {
+          alt: post_title,
+          className: "lazy",
+          "data-src": post_thumb
+        })), /*#__PURE__*/React.createElement("div", {
+          className: "content"
+        }, /*#__PURE__*/React.createElement("div", {
+          className: "meta"
+        }, /*#__PURE__*/React.createElement("span", {
+          className: "date"
+        }, /*#__PURE__*/React.createElement("b", null, "adshrink.it"), " ", /*#__PURE__*/React.createElement("small", null, /*#__PURE__*/React.createElement("a", null, moment('2021-01-01').fromNow())))), /*#__PURE__*/React.createElement("a", {
+          href: link,
+          className: "header newsheader"
+        }, post_title), /*#__PURE__*/React.createElement("div", {
+          className: "description",
+          dangerouslySetInnerHTML: {
+            __html: post_excerpt
+          }
+        }), /*#__PURE__*/React.createElement("div", {
+          className: "extra"
+        }, /*#__PURE__*/React.createElement("i", {
+          className: "paperclip icon middle aligned small"
+        }), slug))))));
 
         if (_adshrink.enabled.adsense && parseInt(elem) % 3 === 0 && parseInt(elem) > 0 && _adshrink.enabled.infeed) {
           html.push( /*#__PURE__*/React.createElement("div", {
@@ -1946,6 +2097,8 @@ class WpCards extends React.Component {
           (adsbygoogle = window.adsbygoogle || []).push({});
         }
       }
+
+      window.lazyLoadInstance.update();
     }
 
     return false;
@@ -2039,11 +2192,12 @@ function Footer(props) {
   }, language.new.footer_payments_premium[0]), /*#__PURE__*/React.createElement("div", {
     className: "sub header"
   }, language.new.footer_payments_premium[1]))), /*#__PURE__*/React.createElement("img", {
+    alt: "payment",
     style: {
       margin: '0px'
     },
-    className: "ui centered small image",
-    src: "https://www.chrisbarnespottery.com/image/payment/credit-cards-logos_635.png"
+    className: "ui centered small image lazy",
+    "data-src": "https://www.chrisbarnespottery.com/image/payment/credit-cards-logos_635.png"
   }), /*#__PURE__*/React.createElement("h4", {
     className: "ui inverted header"
   }, /*#__PURE__*/React.createElement("i", {
@@ -2058,11 +2212,12 @@ function Footer(props) {
   }, language.new.footer_payments_rates[0]), /*#__PURE__*/React.createElement("div", {
     className: "sub header"
   }, language.new.footer_payments_rates[1]))), /*#__PURE__*/React.createElement("img", {
+    alt: "payment",
     style: {
       margin: '0px'
     },
-    className: "ui centered medium image",
-    src: "https://create.3drap.it/img/payment.png"
+    className: "ui centered medium image lazy",
+    "data-src": "https://create.3drap.it/img/payment.png"
   }))), /*#__PURE__*/React.createElement("div", {
     className: "ui inverted section divider"
   }), /*#__PURE__*/React.createElement("p", null, "By using our site, you acknowledge that you have read and understand our Cookie Policy, Privacy Policy, and our Terms of Service. ", /*#__PURE__*/React.createElement("br", null), " ", /*#__PURE__*/React.createElement("i", {
@@ -2085,8 +2240,9 @@ function Footer(props) {
     className: "item",
     href: ___reactjsD.host
   }, ___reactjsD.website + " © 2020")), /*#__PURE__*/React.createElement("img", {
-    className: "ui centered tiny image",
-    src: ___reactjsD.host2 + "/png/adshrink.png"
+    alt: "logo",
+    className: "ui centered tiny image lazy",
+    "data-src": ___reactjsD.host2 + "/png/adshrink.png"
   }), " ", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("a", {
     style: {
       color: "inherit"
@@ -2674,36 +2830,6 @@ class Report extends React.Component {
 
 }
 
-class LikeDislike extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      like: 0,
-      dislike: 0
-    };
-  }
-
-  render() {
-    return /*#__PURE__*/React.createElement("div", {
-      className: "btn-group btn-group-block mx-1 hide-md",
-      id: "bnone"
-    }, /*#__PURE__*/React.createElement("button", {
-      className: "btn tooltip tooltip-bottom",
-      "data-tooltip": "Dislike this shrink",
-      onClick: e => this.props.click(e, 0)
-    }, /*#__PURE__*/React.createElement("i", {
-      className: "fas fa-thumbs-up fa-rotate-180 text-gray"
-    })), /*#__PURE__*/React.createElement("button", {
-      className: "btn tooltip tooltip-bottom",
-      "data-tooltip": "Like this shrink",
-      onClick: e => this.props.click(e, 1)
-    }, /*#__PURE__*/React.createElement("i", {
-      className: "fas fa-thumbs-up text-gray"
-    })));
-  }
-
-}
-
 class Navbar extends React.Component {
   constructor(props) {
     super(props);
@@ -3038,600 +3164,6 @@ function Hero(props) {
   }, "Read more"))))));
 }
 
-function OldTimeline(props) {
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "timeline-item",
-    id: "tl-blue"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "timeline-left"
-  }, /*#__PURE__*/React.createElement("a", {
-    className: "tooltip timeline-icon icon-lg",
-    href: "#timeline-example-6",
-    "data-tooltip": "Check 'lock icon' above recaptcha! (yellow is bad)"
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "fas fa-shield-alt m-1"
-  }))), /*#__PURE__*/React.createElement("div", {
-    className: "timeline-content"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "tile"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "tile-content"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "tile-subtitle mb-1"
-  }, language.t6.head), /*#__PURE__*/React.createElement("small", {
-    className: "tile-title mb-1"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "https://adshrink.it/payout-rates/",
-    target: "_blank",
-    className: "text-link"
-  }, language.t6.a), ": ", language.t6.b))))), /*#__PURE__*/React.createElement("div", {
-    className: "divider"
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "timeline-item",
-    id: "tl-info"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "timeline-left"
-  }, /*#__PURE__*/React.createElement("a", {
-    className: "tooltip timeline-icon icon-lg",
-    href: "#timeline-example-4",
-    "data-tooltip": "Earn with AdShrink.it"
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "icon icon-bookmark m-1"
-  }))), /*#__PURE__*/React.createElement("div", {
-    className: "timeline-content"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "tile"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "tile-content"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "tile-subtitle mb-1"
-  }, language.tpaid), /*#__PURE__*/React.createElement("small", {
-    className: "tile-title mb-1"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "https://adshrink.it/payout-rates/",
-    target: "_blank",
-    className: "text-link"
-  }, language.t4.a), ": ", language.t4.b))))), /*#__PURE__*/React.createElement("div", {
-    className: "divider"
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "timeline-item long",
-    id: "tl-info"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "timeline-left"
-  }, /*#__PURE__*/React.createElement("a", {
-    className: "tooltip timeline-icon icon-lg",
-    href: "#timeline-example-5",
-    "data-tooltip": language.t5.a
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "icon icon-emoji m-1"
-  }))), /*#__PURE__*/React.createElement("div", {
-    className: "timeline-content"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "tile"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "tile-content"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "tile-subtitle mb-1"
-  }, language.twork), /*#__PURE__*/React.createElement("small", {
-    className: "tile-title mb-1"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "https://adshrink.it/work-with-us/",
-    target: "_blank",
-    className: "text-link"
-  }, language.t5.a), ": ", language.t5.b))))));
-}
-
-function TimelineWhOther(props) {
-  return /*#__PURE__*/React.createElement("div", {
-    className: "columns "
-  }, /*#__PURE__*/React.createElement("style", null, " \
-                #tl-blue .timeline-icon.icon-lg { background: #2291ff !important; } \
-                #tl-info .timeline-icon.icon-lg { background: #ffb700 !important; } \
-                #tl-success .timeline-icon { background: #13dc74 !important} \
-                #tl-onprocess .timeline-icon::before { border: .1rem solid #afadad; } \
-                .timeline .timeline-item {margin: 5px !important;} \
-                .timeline .timeline-item::before { width: 0px !important} \
-            "), /*#__PURE__*/React.createElement("div", {
-    className: "column col-xs-auto"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: ""
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "card-header",
-    id: "tl-blue"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "label float-right tooltip",
-    "data-tooltip": "Check 'lock icon' above recaptcha! (yellow is bad)"
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "fas fa-shield-alt m-1"
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "card-title h5 text-dark",
-    style: {
-      fontWeight: "200"
-    }
-  }, language.t6.head)), /*#__PURE__*/React.createElement("div", {
-    className: "card-body text-gray",
-    style: {
-      fontWeight: "200"
-    }
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "https://adshrink.it/payout-rates/",
-    target: "_blank",
-    className: "text-link"
-  }, language.t6.a), " \u2022 ", language.t6.b))), /*#__PURE__*/React.createElement("div", {
-    className: "divider-vert hide-xs"
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "column col-xs-auto"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: ""
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "card-header",
-    id: "tl-info"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "label float-right tooltip",
-    "data-tooltip": "Earn with AdShrink.it"
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "icon icon-bookmark m-1"
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "card-title h5 test-dark",
-    style: {
-      fontWeight: "200"
-    }
-  }, language.tpaid)), /*#__PURE__*/React.createElement("div", {
-    className: "card-body text-gray",
-    style: {
-      fontWeight: "200"
-    }
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "https://adshrink.it/payout-rates/",
-    target: "_blank",
-    className: "text-link"
-  }, language.t4.a), " \u2022 ", language.t4.b))), /*#__PURE__*/React.createElement("div", {
-    className: "divider-vert hide-xs"
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "column col-xs-auto"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: ""
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "card-header",
-    id: "tl-info"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "label float-right tooltip",
-    "data-tooltip": language.t5.a
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "icon icon-emoji m-1"
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "card-title h5 text-dark",
-    style: {
-      fontWeight: "200"
-    }
-  }, language.twork)), /*#__PURE__*/React.createElement("div", {
-    className: "card-body text-gray",
-    style: {
-      fontWeight: "200"
-    }
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "https://adshrink.it/work-with-us/",
-    target: "_blank",
-    className: "text-link"
-  }, language.t5.a), " \u2022 ", language.t5.b))));
-}
-
-function Timeline(props) {
-  const loading = props.loaded.length || 0;
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("style", null, " \
-                #tl-blue .timeline-icon.icon-lg { background: #2291ff !important; } \
-                #tl-info .timeline-icon.icon-lg { background: #ffb700 !important; } \
-                #tl-success .timeline-icon { background: #13dc74 !important} \
-                #tl-onprocess .timeline-icon::before { border: .1rem solid #afadad; } \
-                .timeline .timeline-item {margin: 5px !important;} \
-                .timeline .timeline-item::before { width: 0px !important} \
-            "), /*#__PURE__*/React.createElement("div", {
-    className: "card timeline text-left p-2",
-    id: "panelTimeline"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "timeline-item",
-    id: "tl-success"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "timeline-left"
-  }, /*#__PURE__*/React.createElement("a", {
-    className: "timeline-icon icon-lg tooltip",
-    href: "#timeline-example-1",
-    "data-tooltip": "Opened at HH:mm:ss"
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "icon icon-check m-1"
-  }))), /*#__PURE__*/React.createElement("div", {
-    className: "timeline-content"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "tile"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "tile-content"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "tile-subtitle text-ellipsis mb-1"
-  }, language.tloading))))), /*#__PURE__*/React.createElement("div", {
-    className: "divider"
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "timeline-item",
-    id: "tl-success"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "timeline-left"
-  }, /*#__PURE__*/React.createElement("a", {
-    className: "timeline-icon icon-lg tooltip",
-    href: "#timeline-example-2",
-    "data-tooltip": language.t2.a + "."
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "icon icon-check m-1"
-  }))), /*#__PURE__*/React.createElement("div", {
-    className: "timeline-content"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "tile"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "tile-content"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "tile-subtitle mb-1"
-  }, language.tskip), /*#__PURE__*/React.createElement("small", {
-    className: "tile-title mb-1"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#",
-    className: "text-link"
-  }, language.t2.a), ": ", language.t2.b))))), /*#__PURE__*/React.createElement("div", {
-    className: "divider"
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "timeline-item",
-    id: props.recaptcha ? 'tl-success' : 'tl-onprocess'
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "timeline-left"
-  }, /*#__PURE__*/React.createElement("a", {
-    className: "tooltip " + (props.recaptcha ? "timeline-icon icon-lg" : "timeline-icon icon m-1"),
-    href: "#timeline-example-3",
-    "data-tooltip": "Enjoy :)"
-  }, props.recaptcha && /*#__PURE__*/React.createElement("i", {
-    className: "icon icon-check m-1"
-  }))), /*#__PURE__*/React.createElement("div", {
-    className: "timeline-content"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "tile"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "tile-content"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "tile-subtitle mb-1"
-  }, /*#__PURE__*/React.createElement("b", null, props.recaptcha ? "You are being redirected." : language.trecap)), /*#__PURE__*/React.createElement("small", {
-    className: "tile-title mb-1"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#",
-    className: "text-link"
-  }, language.t3.a), ": ", language.t3.b)))))));
-}
-
-class SliderDemo extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      value: 6,
-      data: {
-        slider_views: 1000,
-        slider_month: 1,
-        slider_ads: 1,
-        from: 'us'
-      }
-    };
-    this.visitorsFrom = {
-      us: 0.007,
-      eu: 0.0045,
-      as: 0.009,
-      ru: 0.0055,
-      mx: 0.0030,
-      ae: 0.005,
-      co: 0.0025
-    };
-    this.levelAds = {
-      1: /*#__PURE__*/React.createElement("span", {
-        className: "green badge"
-      }, /*#__PURE__*/React.createElement("i", {
-        className: "fas fa-location-arrow"
-      }), " ", "Banner/Pop-Up"),
-      2: /*#__PURE__*/React.createElement("span", {
-        className: "red badge"
-      }, /*#__PURE__*/React.createElement("i", {
-        className: "fas fa-bell"
-      }), " ", "Force Push-up/Active Notifications"),
-      3: /*#__PURE__*/React.createElement("span", {
-        className: "red badge"
-      }, /*#__PURE__*/React.createElement("i", {
-        className: "far fa-newspaper"
-      }), " ", "Discover \"interesting\" articles"),
-      4: /*#__PURE__*/React.createElement("span", {
-        className: "red badge"
-      }, /*#__PURE__*/React.createElement("i", {
-        className: "fas fa-video"
-      }), " ", "Watch Video"),
-      5: /*#__PURE__*/React.createElement("span", {
-        className: "red badge"
-      }, /*#__PURE__*/React.createElement("i", {
-        className: "fas fa-puzzle-piece"
-      }), " ", "Force install Add-on")
-    }; //1 = normal, 2 = push, 3 = force push + popups, 4 = 3 + force video, 5 = linkvertise  
-
-    this.recalculateAmount = this.recalculateAmount.bind(this);
-    this.onChangeValue = this.onChangeValue.bind(this);
-  }
-
-  recalculateAmount(name, invalue) {
-    var {
-      slider_views,
-      slider_month,
-      slider_ads,
-      from
-    } = this.state.data || [];
-    slider_views = parseInt(name == 'slider_views' ? invalue : slider_views) / parseInt(name == 'slider_ads' ? invalue : slider_ads);
-    slider_month = parseInt(name == 'slider_month' ? invalue : slider_month);
-    from = parseFloat(name == 'from' ? this.visitorsFrom[invalue] : this.visitorsFrom[from]);
-    const value = (from * slider_views * slider_month).toFixed(0);
-    this.setState({
-      value: value
-    });
-  }
-
-  onChangeValue(e) {
-    e.preventDefault();
-    var {
-      value,
-      name,
-      id
-    } = e.target; //value = $('#slider_demo_countries_dropdown').dropdown('get values');
-
-    const data = Object.assign({}, this.state.data, {
-      [name]: name !== 'from' ? parseInt(value) : value
-    });
-    this.recalculateAmount(name, value);
-    this.setState({
-      data
-    });
-  }
-
-  componentDidMount() {
-    const that = this;
-    $('#slider_demo_countries_dropdown').dropdown({
-      clearable: true,
-      onChange: function (value, text, $selectedItem) {
-        const data = Object.assign({}, that.state.data, {
-          from: value
-        });
-        that.recalculateAmount('from', value);
-        that.setState({
-          data
-        });
-      }
-    });
-  }
-
-  componentDidUpdate(nextProps, nextState) {
-    if (nextState !== this.state) {
-      return true;
-    }
-
-    return false;
-  }
-
-  shouldComponentUpdate(nextProps, nextState) {
-    if (nextState.data !== this.state.data) {
-      return true;
-    }
-
-    return false;
-  }
-
-  render() {
-    const {
-      slider_views,
-      slider_month,
-      slider_ads,
-      from
-    } = this.state.data || [];
-    const {
-      value
-    } = this.state || [];
-    const ads_table = [];
-    Object.keys(this.levelAds).map(k => {
-      if (k > slider_ads) return true;
-      if (slider_ads > 1 && k > 1) ads_table.push( /*#__PURE__*/React.createElement("span", null, " + ", /*#__PURE__*/React.createElement("br", null)));
-      ads_table.push( /*#__PURE__*/React.createElement("span", {
-        key: k,
-        className: "chip"
-      }, this.levelAds[k]));
-    });
-
-    if (!this.dropdown_init) {
-      $('#slider_demo_countries_dropdown').dropdown({
-        clearable: true
-      });
-      this.dropdown_init = true;
-    }
-
-    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h3", {
-      className: "ui header"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "sub header"
-    }, "DISCOVER"), "How much you can earn with us?"), /*#__PURE__*/React.createElement("div", {
-      className: "ui segment basic left aligned",
-      style: {
-        padding: "15px 0px",
-        margin: "0px"
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "ui statistic small"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "value",
-      style: {
-        color: '#12cc6b',
-        fontWeight: '900'
-      }
-    }, "$ " + value + ",00"))), /*#__PURE__*/React.createElement("div", {
-      className: "ui fluid selection dropdown",
-      id: "slider_demo_countries_dropdown"
-    }, /*#__PURE__*/React.createElement("input", {
-      type: "hidden",
-      name: "from",
-      onChange: e => this.onChangeValue(e)
-    }), /*#__PURE__*/React.createElement("i", {
-      className: "dropdown icon"
-    }), /*#__PURE__*/React.createElement("div", {
-      className: "default text"
-    }, "United State"), /*#__PURE__*/React.createElement("div", {
-      className: "menu"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "item",
-      "data-value": "us"
-    }, /*#__PURE__*/React.createElement("i", {
-      className: "us flag"
-    }), "United States"), /*#__PURE__*/React.createElement("div", {
-      className: "item",
-      "data-value": "mx"
-    }, /*#__PURE__*/React.createElement("i", {
-      className: "mx flag"
-    }), "Mexico"), /*#__PURE__*/React.createElement("div", {
-      className: "item",
-      "data-value": "co"
-    }, /*#__PURE__*/React.createElement("i", {
-      className: "bz flag"
-    }), /*#__PURE__*/React.createElement("i", {
-      className: "co flag"
-    }), /*#__PURE__*/React.createElement("i", {
-      className: "ar flag"
-    }), /*#__PURE__*/React.createElement("i", {
-      className: "cl flag"
-    }), /*#__PURE__*/React.createElement("i", {
-      className: "bo flag"
-    }), " South America"), /*#__PURE__*/React.createElement("div", {
-      className: "item",
-      "data-value": "eu"
-    }, /*#__PURE__*/React.createElement("i", {
-      className: "eu flag"
-    }), "European Union"), /*#__PURE__*/React.createElement("div", {
-      className: "item",
-      "data-value": "ae"
-    }, /*#__PURE__*/React.createElement("i", {
-      className: "ae flag"
-    }), "Middle East"), /*#__PURE__*/React.createElement("div", {
-      className: "item",
-      "data-value": "as"
-    }, /*#__PURE__*/React.createElement("i", {
-      className: "jp flag"
-    }), /*#__PURE__*/React.createElement("i", {
-      className: "hk flag"
-    }), /*#__PURE__*/React.createElement("i", {
-      className: "in flag"
-    }), /*#__PURE__*/React.createElement("i", {
-      className: "kr flag"
-    }), /*#__PURE__*/React.createElement("i", {
-      className: "cn flag"
-    }), "Asia"), /*#__PURE__*/React.createElement("div", {
-      className: "item",
-      "data-value": "ru"
-    }, /*#__PURE__*/React.createElement("i", {
-      className: "ru flag"
-    }), "Russia"))), " ", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("form", {
-      className: "ui form"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "field"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "one fields"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "field"
-    }, /*#__PURE__*/React.createElement("label", null, /*#__PURE__*/React.createElement("h5", {
-      className: "ui header"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "sub header"
-    }, " ", slider_ads > 1 && /*#__PURE__*/React.createElement("a", {
-      className: "ui red mini label",
-      style: {
-        margin: "0px"
-      }
-    }, (slider_views - slider_views / slider_ads).toFixed(0), " Impressions", /*#__PURE__*/React.createElement("div", {
-      className: "detail"
-    }, "loss")), " "), /*#__PURE__*/React.createElement("i", {
-      className: "info circle icon"
-    }), " ", "Monthly visitors", " ", /*#__PURE__*/React.createElement("a", null, /*#__PURE__*/React.createElement("small", {
-      className: "label"
-    }, " ", (slider_views / slider_ads).toFixed(0), " ")))), /*#__PURE__*/React.createElement("div", {
-      className: "ui segment basic floating"
-    }, /*#__PURE__*/React.createElement("input", {
-      className: "slider",
-      step: "1000",
-      type: "range",
-      min: "1000",
-      max: "1000000",
-      value: (slider_views / slider_ads).toFixed(0),
-      name: "slider_views",
-      id: "slider_views",
-      onChange: e => this.onChangeValue(e)
-    }))), /*#__PURE__*/React.createElement("div", {
-      className: "field"
-    }, /*#__PURE__*/React.createElement("label", null, /*#__PURE__*/React.createElement("h5", {
-      className: "ui header"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "sub header"
-    }, " ", slider_ads > 1 && /*#__PURE__*/React.createElement("a", {
-      className: "ui red mini label",
-      style: {
-        margin: "0px"
-      }
-    }, "Months", /*#__PURE__*/React.createElement("div", {
-      className: "detail"
-    }, "loss")), " "), /*#__PURE__*/React.createElement("i", {
-      className: "info circle icon"
-    }), " ", "Months", " ", /*#__PURE__*/React.createElement("a", null, /*#__PURE__*/React.createElement("small", {
-      className: "label"
-    }, " ", slider_month, " ")))), /*#__PURE__*/React.createElement("div", {
-      className: "ui segment basic floating"
-    }, /*#__PURE__*/React.createElement("input", {
-      className: "ui range",
-      step: "1",
-      type: "range",
-      min: "1",
-      max: "18",
-      value: slider_month,
-      name: "slider_month",
-      id: "slider_month",
-      onChange: e => this.onChangeValue(e)
-    })))))), /*#__PURE__*/React.createElement("style", null, '.red.badge:not([data-badge])::after { background: red !important; } .green.badge:not([data-badge])::after { background: #13dc74 !important; } input[type=range]::-webkit-slider-thumb { background: #13dc74 !important; } input[type=range]::-moz-focus-outer { border: 0 !important; } '), /*#__PURE__*/React.createElement("div", {
-      className: "columns table-adv"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "column"
-    }, /*#__PURE__*/React.createElement("h6", {
-      className: "text-dark"
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "label label-warning"
-    }, "ADs"), " Comparison"), /*#__PURE__*/React.createElement("div", {
-      className: "ui segment basic floating"
-    }, /*#__PURE__*/React.createElement("input", {
-      className: "slider",
-      step: "1",
-      type: "range",
-      min: "1",
-      max: "5",
-      value: slider_ads,
-      name: "slider_ads",
-      id: "slider_ads",
-      onChange: e => this.onChangeValue(e)
-    })), /*#__PURE__*/React.createElement("div", {
-      className: "divider"
-    }), ads_table, /*#__PURE__*/React.createElement("div", {
-      className: "divider"
-    }), /*#__PURE__*/React.createElement("small", {
-      className: "text-left"
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "green badge"
-    }, "Adshrink.it"), " · ", /*#__PURE__*/React.createElement("span", {
-      className: "red badge"
-    }, "Other Systems"))), /*#__PURE__*/React.createElement("div", {
-      className: "ui heart rating",
-      "data-rating": "1",
-      "data-max-rating": "3"
-    })));
-  }
-
-}
-
 function ComponentInfos(props) {
   return /*#__PURE__*/React.createElement("div", {
     className: "ui basic segment center aligned"
@@ -3756,8 +3288,20 @@ class AdsenseBanner extends React.Component {
       },
       "data-ad-client": _adshrink.adsbygoogle_settings.capub,
       "data-ad-slot": _adshrink.adsbygoogle_settings.formats.square
+    })), size === 'medium_rectangle_responsive' && _adshrink.enabled.adsense && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("ins", {
+      class: "adsbygoogle",
+      style: {
+        display: "block"
+      },
+      "data-ad-client": _adshrink.adsbygoogle_settings.capub,
+      "data-ad-slot": _adshrink.adsbygoogle_settings.formats.squareresponsive,
+      "data-ad-format": "auto",
+      "data-full-width-responsive": "true"
     })), size === 'half_page' && _adshrink.enabled.adsense && /*#__PURE__*/React.createElement("div", {
-      className: "ui half page ad"
+      className: "ui half page ad",
+      style: {
+        margin: "0 auto"
+      }
     }, /*#__PURE__*/React.createElement("ins", {
       className: "adsbygoogle",
       style: {
@@ -3767,10 +3311,25 @@ class AdsenseBanner extends React.Component {
       },
       "data-ad-client": _adshrink.adsbygoogle_settings.capub,
       "data-ad-slot": _adshrink.adsbygoogle_settings.formats.sky
+    })), size === 'half_page_responsive' && _adshrink.enabled.adsense && /*#__PURE__*/React.createElement("div", {
+      style: {
+        margin: "0 auto"
+      }
+    }, /*#__PURE__*/React.createElement("ins", {
+      class: "adsbygoogle",
+      style: {
+        display: "block",
+        minHeight: "600px",
+        margin: "0 auto"
+      },
+      "data-ad-client": _adshrink.adsbygoogle_settings.capub,
+      "data-ad-slot": _adshrink.adsbygoogle_settings.formats.skyresponsive,
+      "data-ad-format": "vertical",
+      "data-full-width-responsive": "true"
     })), size === 'leaderboard' && _adshrink.enabled.adsense && /*#__PURE__*/React.createElement("div", {
       className: "ui leaderboard ad",
       style: {
-        margin: "0 auto"
+        margin: "0px"
       }
     }, /*#__PURE__*/React.createElement("ins", {
       className: "adsbygoogle",
@@ -4167,11 +3726,8 @@ class Comments extends React.Component {
       className: "ui basic segment fluid left aligned"
     }, /*#__PURE__*/React.createElement("style", null, " \
                             //.g-signin2 { margin: 3px calc( 50% - 120px) !important; } \
-                        "), /*#__PURE__*/React.createElement("b", null, "Google"), " ", language.new.google_auth[0], /*#__PURE__*/React.createElement("div", {
-      className: "g-signin2",
-      id: "g-signin2",
-      "data-onsuccess": googleUser => this.onAuthGoogle(googleUser)
-    })), /*#__PURE__*/React.createElement("div", {
+                            // qua c'era \
+                        "), /*#__PURE__*/React.createElement("b", null, "Google"), " ", language.new.google_auth[0]), /*#__PURE__*/React.createElement("div", {
       className: "ui comments"
     }, this.getComments(), extra_comments && this.extra_comments, Object.keys(comments).length >= 2 && /*#__PURE__*/React.createElement("div", {
       className: "comment"
@@ -4263,6 +3819,7 @@ function ComponentFirstInfoSegment(props) {
   }), " ")), /*#__PURE__*/React.createElement("div", {
     className: "eight wide computer eight wide tablet sixteen wide mobile column"
   }, /*#__PURE__*/React.createElement("img", {
+    alt: "Unleash the power of the link",
     "data-src": "https://adshrink.it/wp-content/uploads/2019/02/ndkejndksjndks.png",
     className: "ui fluid image lazy custom-image-segment-one"
   })));
@@ -4278,8 +3835,9 @@ function ComponentSecondInfoSegment(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "ui grid centered"
   }, /*#__PURE__*/React.createElement("img", {
-    className: "ui image",
-    src: "https://i.l.inmobicdn.net/website/website/6.0.1/img/publisher-campaign/eCPM.png"
+    alt: "Publish anywhere, grow everywhere.",
+    className: "ui image lazy",
+    "data-src": "https://i.l.inmobicdn.net/website/website/6.0.1/img/publisher-campaign/eCPM.png"
   }))), /*#__PURE__*/React.createElement("div", {
     className: "eight wide computer eight wide tablet sixteen wide mobile column "
   }, /*#__PURE__*/React.createElement("h1", {
@@ -4667,81 +4225,6 @@ function ComponentPopUpMenu(props) {
 
 function ComponentSplitSegment(props) {
   return /*#__PURE__*/React.createElement("div", null);
-}
-
-class OutbrainWidget extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      script: {
-        outbrain: false
-      }
-    };
-    this.onScriptLoad = this.onScriptLoad.bind(this);
-    this.onLoadOutbrain = this.onLoadOutbrain.bind(this);
-  }
-
-  componentDidMount() {
-    this._is_mounted = true;
-    this.onScriptLoad('outbrain', 'https://widgets.outbrain.com/outbrain.js');
-    window.addEventListener("beforeunload", () => {
-      alert('beforeunload');
-    });
-    window.addEventListener("unload", () => {
-      alert('unload');
-    });
-  }
-
-  shouldComponentUpdate(nextProps, nextState) {
-    if (nextState.script !== this.state.script) {
-      return true;
-    }
-
-    return false;
-  }
-
-  componentDidUpdate(nextProps, nextState) {
-    if (getNestedObj(() => nextState.script.outbrain) !== getNestedObj(() => this.state.script.outbrain)) this.onLoadOutbrain();
-  }
-
-  onLoadOutbrain() {
-    alert('outbrain');
-  }
-
-  onScriptLoad(scriptname, src) {
-    const that = this;
-    let script;
-    let request_script = new_script(src);
-    request_script.then(function (resolve) {
-      script = Object.assign({}, that.state.script, {
-        [scriptname]: true
-      });
-      that.setState({
-        script
-      });
-    }).catch(function (reject) {
-      script = Object.assign({}, that.state.script, {
-        [scriptname]: false
-      });
-      that.setState({
-        script
-      });
-    });
-  }
-
-  render() {
-    const {
-      canvas,
-      img
-    } = this.state || [];
-    let href = window.location.href || 'https://adshrink.it';
-    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-      className: "OUTBRAIN",
-      "data-src": href,
-      "data-widget-id": "AR_1"
-    }));
-  }
-
 }
 
 class ComponentMouseFlow extends React.Component {
@@ -6412,6 +5895,592 @@ class ComponentRotationAdv extends React.Component {
 
 }
 
+function SegmentSection(props) {
+  return /*#__PURE__*/React.createElement("section", {
+    className: "ui secondary attached segment share row box"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "author shrink flexbox"
+  }, /*#__PURE__*/React.createElement("img", {
+    style: {
+      height: '50px',
+      width: '50px'
+    },
+    className: "avatar",
+    src: "https://gravatar.com/avatar/a11177472cedfbb8f5a2bb64362816a0?s=512&d=https://codepen.io/assets/avatars/user-avatar-512x512-6e240cf350d2f1cc07c2bed234c3a3bb5f1b237023c204c782622e80d6b212ba.png"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "info shrink flexbox"
+  }, /*#__PURE__*/React.createElement("a", {
+    href: "https://twitter.com/@UtkarshVerma_"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "name"
+  }, "Utkarsh Verma")), /*#__PURE__*/React.createElement("p", {
+    className: "desc"
+  }, "A keen maker, programmer and an Instructables author.")), /*#__PURE__*/React.createElement("div", {
+    className: "spacer both flexbox"
+  }), /*#__PURE__*/React.createElement("section", {
+    className: "buttons row box none flexbox"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "facebook none flexbox",
+    href: "#",
+    onclick: "window.open( 'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href), 'facebook-share-dialog', 'width=626,height=436'); return false;"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "ui facebook button"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "facebook icon"
+  }), "Share")), /*#__PURE__*/React.createElement("div", {
+    className: "twitter none flexbox",
+    onclick: "window.open('https://twitter.com/intent/tweet?text=<Your custom message>')"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "ui twitter button"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "twitter icon"
+  }), "Tweet"))));
+}
+
+class TwitterTimeline extends React.Component {
+  constructor(props) {
+    super(props);
+
+    _defineProperty(this, "print_tweets", () => {
+      let that = this;
+      let data = getNestedObj(() => this.props.tweets.data, []) || [];
+      var html = [];
+      Object.keys(data).map(e => {
+        let {
+          created_at,
+          text,
+          retweeted_status,
+          user,
+          entities
+        } = data[e] || [];
+        let {
+          name,
+          profile_image_url_https,
+          screen_name,
+          verified
+        } = user || [];
+        let {
+          hashtags,
+          media,
+          urls,
+          user_mentions
+        } = entities || [];
+        hashtags = hashtags ? hashtags : [];
+        media = media ? media : [];
+        urls = urls ? urls : [];
+        var html_media = Object.keys(media).map(e_media => {
+          let {
+            media_url_https,
+            expanded_url
+          } = media[e_media] || 'n/a';
+          return /*#__PURE__*/React.createElement("a", {
+            href: expanded_url,
+            target: "_blank"
+          }, /*#__PURE__*/React.createElement("img", {
+            src: media_url_https
+          }));
+        });
+        var html_hashtag = Object.keys(hashtags).map(e_hashtags => {
+          let {
+            text
+          } = hashtags[e_hashtags] || 'n/a';
+          return /*#__PURE__*/React.createElement("span", {
+            className: "ui label tiny"
+          }, "#" + text);
+        });
+        var html_urls = Object.keys(urls).map(e_urls => {
+          let {
+            display_url
+          } = urls[e_urls] || 'n/a';
+          return /*#__PURE__*/React.createElement("a", {
+            href: getNestedObj(() => urls[e_urls].expanded_url),
+            target: "_blank"
+          }, display_url);
+        });
+        html.push( /*#__PURE__*/React.createElement("div", {
+          class: "event"
+        }, /*#__PURE__*/React.createElement("div", {
+          className: "label"
+        }, /*#__PURE__*/React.createElement("img", {
+          src: profile_image_url_https
+        })), /*#__PURE__*/React.createElement("div", {
+          className: "content"
+        }, /*#__PURE__*/React.createElement("div", {
+          className: "summary"
+        }, /*#__PURE__*/React.createElement("a", null, name), " ", text, /*#__PURE__*/React.createElement("div", {
+          className: "date"
+        }, moment(created_at).fromNow())), /*#__PURE__*/React.createElement("div", {
+          className: "extra images"
+        }, html_media), /*#__PURE__*/React.createElement("div", {
+          className: "meta"
+        }, html_hashtag))));
+      });
+      return /*#__PURE__*/React.createElement("div", {
+        className: "ui segment"
+      }, /*#__PURE__*/React.createElement("div", {
+        class: "ui feed"
+      }, html));
+    });
+
+    this.state = {
+      fetching: false
+    };
+  }
+
+  componentDidMount() {}
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (nextProps !== this.props) {
+      return true;
+    }
+
+    return false;
+  }
+
+  render() {
+    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+      className: "ui segments"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "ui segment secondary"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "ui header left aligned"
+    }, "Latest Tweets ", /*#__PURE__*/React.createElement("a", {
+      href: "https://support.twitter.com/articles/20175256",
+      target: "_blank",
+      style: {
+        color: "inherit"
+      }
+    }, /*#__PURE__*/React.createElement("i", {
+      style: {
+        color: "#8c8c8c"
+      },
+      className: "small question circle outline icon middle aligned"
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "sub header"
+    }, "by keyword ", /*#__PURE__*/React.createElement("a", null, "Adshrink.it"))), /*#__PURE__*/React.createElement("div", {
+      class: "ui message tiny"
+    }, /*#__PURE__*/React.createElement("p", null, "Publish our links on twitter for appear here. ", /*#__PURE__*/React.createElement("span", {
+      className: "ui span blue tiny"
+    }, "#adshrinkit")))), this.print_tweets()));
+  }
+
+}
+
+class ComponentFirstPage extends React.Component {
+  constructor(props) {
+    super(props);
+
+    _defineProperty(this, "on_continue", (e, type = 'premium') => {
+      e.preventDefault();
+      let {
+        u,
+        dev,
+        basic
+      } = this.props || false;
+      let {
+        username
+      } = getNestedObj(() => u.username) || 'Guest';
+
+      if (type === 'premium') {
+        window.location.href = _adshrink.premiumpage + username;
+        return;
+      } else if (type === 'btcpaidlink') {
+        if (basic) window.open(_adshrink.paywall, '_blank');else if (!basic && typeof basic !== 'undefined') {}
+      }
+
+      this.props.on_continue(e);
+    });
+
+    _defineProperty(this, "print_lastlinks", () => {
+      return getNestedObj(() => this.props.html_lastlinks);
+    });
+
+    this.state = {};
+  }
+
+  componentDidMount() {}
+
+  componentDidUpdate(nextProps, nextState) {}
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (nextProps !== this.props) return true;
+    return false;
+  }
+
+  componentDidUpdate(nextProps, nextState) {}
+
+  render() {
+    let {
+      u,
+      dev,
+      publicdata
+    } = this.props || false;
+    let {
+      username
+    } = getNestedObj(() => u.username) || 'Guest';
+    let paid_btc = false;
+    let italy_mode = {
+      green: {
+        background: "#11998e",
+        background: "-webkit-linear-gradient(to right, #38ef7d, #11998e)",
+        background: "linear-gradient(to right, #38ef7d, #11998e)"
+      },
+      white: {
+        background: "#ED213A",
+        background: "-webkit-linear-gradient(to right, #93291E, #ED213A)",
+        background: "linear-gradient(to right, #93291E, #ED213A)"
+      },
+      red: {
+        background: "#ED213A",
+        background: "-webkit-linear-gradient(to right, #93291E, #ED213A)",
+        background: "linear-gradient(to right, #93291E, #ED213A)"
+      }
+    };
+    let faded_img = {
+      paddingLeft: "250px",
+      boxSizing: "border-box"
+    };
+    let device_format_tablet_computer = dev === 'Desktop' || dev === 'Tablet' ? true : false;
+    let modal = "ui dimmer basic fullscreen long modal";
+
+    let isSafari = /constructor/i.test(window.HTMLElement) || function (p) {
+      return p.toString() === "[object SafariRemoteNotification]";
+    }(!window['safari'] || typeof safari !== 'undefined' && window['safari'].pushNotification); //onClick={(e) => this.props.on_continue(e, 'premium')}
+    //<p><span style={{margin: "5px 0px 5px 5px"}} className="ui label red mini">Accept all <span style={{marginLeft: "5px", padding: "0px 5px", borderRadius: "3px", background: "white", color: "#9e9e9e"}}>Cookie consent and the GDPR</span></span> <span style={{margin: "5px 0px 5px 5px"}} className="ui label red mini">Disable <span style={{marginLeft: "5px", padding: "0px 5px", borderRadius: "3px", background: "white", color: "#9e9e9e"}}>Ad-Blocker</span></span></p>
+
+
+    return /*#__PURE__*/React.createElement("div", {
+      id: "first_page_content_div",
+      className: "twelve wide computer eight wide tablet sixteen wide mobile column middle aligned " + (!device_format_tablet_computer ? '' : 'lazy'),
+      "data-bg-multi": "url(https://res.cloudinary.com/drzbscyrl/image/upload/q_65/v1613752978/start_img3-1_2x_ybnmal.png),url(https://res.cloudinary.com/drzbscyrl/image/upload/q_65/v1613750251/start_img3-v2_2x_c23ehl.png),linear-gradient(rgb(255, 255, 255), rgb(248 249 250))",
+      style: {
+        padding: "120px 0px",
+        backgroundColor: "#000000d6 !important",
+        width: "100% !important",
+        backgroundSize: "contain"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "row",
+      style: {
+        maxHeight: "calc(100%) !important",
+        margin: "20px !important"
+      }
+    }, /*#__PURE__*/React.createElement("style", null, ".super-bg-gradient-pro { background: #fff !important;background: -moz-linear-gradient(top, #fff 0, #fafafa 100%) !important;background: -webkit-linear-gradient(top, #fff, #fafafa) !important;background: linear-gradient(180deg, #fff 0, #fafafa) !important;-webkit-box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .15) !important;-moz-box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .15) !important;box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .15) !important; } .scrolling.content {} .ui.segments.bgimg {background: white;border: solid 1px #c9c9c9;box-sizing: border-box; margin: 0px !important; }.rainbow-text{background-image: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red);-webkit-background-clip: text;color: transparent;"), device_format_tablet_computer && typeof device_format_tablet_computer !== 'undefined' && /*#__PURE__*/React.createElement("div", {
+      className: "ui container grid stackable computer only tablet only center aligned"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "twelve wide computer fourteen wide tablet column"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "row center algined"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "ui horizontal segments bgimg super-bg-gradient-pro",
+      style: {
+        margin: "12px 0px !important"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "ui segments",
+      style: {
+        paddingTop: "10px",
+        width: paid_btc ? "50%" : "50%",
+        border: "0px",
+        boxShadow: "initial"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "ui segment basic",
+      style: isSafari ? {} : {
+        height: "100%"
+      }
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "ui header left aligned middle aligned",
+      style: {
+        color: "#444"
+      }
+    }, "Continue without Ad-Blocker", /*#__PURE__*/React.createElement("div", {
+      className: "sub header",
+      style: {
+        color: "#848484"
+      }
+    }, "To reach the destination page, please deactivate your Ad-Blocker and click \"Continue\"")), /*#__PURE__*/React.createElement("div", {
+      className: "ui segment basic"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "ui list"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "item"
+    }, /*#__PURE__*/React.createElement("i", {
+      className: "check icon",
+      style: {
+        color: "#13dc74"
+      }
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "content",
+      style: {
+        textAlign: "left",
+        color: "#888888"
+      }
+    }, "Free")), /*#__PURE__*/React.createElement("div", {
+      className: "item"
+    }, /*#__PURE__*/React.createElement("i", {
+      className: "close icon red"
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "content",
+      style: {
+        textAlign: "left",
+        color: "#888888"
+      }
+    }, "Automatic destination")), /*#__PURE__*/React.createElement("div", {
+      className: "item"
+    }, /*#__PURE__*/React.createElement("i", {
+      className: "close icon red"
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "content",
+      style: {
+        textAlign: "left",
+        color: "#888888"
+      }
+    }, "Exclusive content")))), /*#__PURE__*/React.createElement("div", {
+      className: "ui animated button fluid big primary",
+      tabindex: "0",
+      style: isSafari ? {
+        position: "relative",
+        top: "77px",
+        marginTop: "10px !important"
+      } : {
+        bottom: "0px",
+        bottom: "15px",
+        position: "absolute",
+        width: "calc(100% - 28px)",
+        marginTop: "10px !important"
+      },
+      onClick: e => this.props.on_continue(e)
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "visible content"
+    }, "Click here", /*#__PURE__*/React.createElement("br", null), "to Continue"), /*#__PURE__*/React.createElement("div", {
+      className: "hidden content"
+    }, /*#__PURE__*/React.createElement("i", {
+      className: "right arrow icon"
+    })))), paid_btc && /*#__PURE__*/React.createElement("div", {
+      className: "ui segment basic",
+      style: {
+        paddingTop: "10px",
+        width: "100%"
+      }
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "ui header left aligned middle aligned",
+      style: {
+        color: "#444"
+      }
+    }, "Buy direct access to the link!", /*#__PURE__*/React.createElement("div", {
+      className: "sub header",
+      style: {
+        color: "848484"
+      }
+    }, "After purchase, the link will always remain directly accessible to your account"), /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("a", {
+      style: {
+        color: "rgb(221, 221, 221)"
+      }
+    }, " ", /*#__PURE__*/React.createElement("span", {
+      style: {
+        margin: "5px 0px 5px 5px"
+      },
+      className: "ui label red mini"
+    }, " Bitcoin ", /*#__PURE__*/React.createElement("span", {
+      style: {
+        marginLeft: "5px",
+        padding: "0px 5px",
+        borderRadius: "3px",
+        background: "white",
+        color: "red"
+      }
+    }, "HOT - Make your first Paid Link and get 80% from each sale"))))), /*#__PURE__*/React.createElement("div", {
+      className: "ui animated button fluid secondary",
+      tabindex: "0",
+      style: {
+        position: "relative",
+        bottom: "0px"
+      },
+      onClick: e => this.on_continue(e, 'btcpaidlink')
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "visible content"
+    }, "Buy direct access using Bitcoin"), /*#__PURE__*/React.createElement("div", {
+      className: "hidden content"
+    }, /*#__PURE__*/React.createElement("i", {
+      className: "btc icon"
+    }))))), /*#__PURE__*/React.createElement("div", {
+      className: "ui vertical divider"
+    }, "Or"), /*#__PURE__*/React.createElement("div", {
+      className: "ui segments",
+      style: {
+        width: paid_btc ? "50%" : "50%",
+        border: "0px",
+        boxShadow: "initial"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "ui segment basic"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "ui header left aligned middle aligned",
+      style: {
+        color: "#444"
+      }
+    }, "Continue with Adshrink Premium", /*#__PURE__*/React.createElement("div", {
+      className: "sub header",
+      style: {
+        color: "#848484"
+      }
+    }, 'Say thanks to "' + username + '". Our creators love hearing from you and seeing how you are supporting them')), /*#__PURE__*/React.createElement("video", {
+      class: "lazy",
+      controls: true,
+      width: "100%",
+      "data-src": "https://adshnk.com/video/adshrink-premium-explanation-video.mp4",
+      "data-poster": "https://res.cloudinary.com/drzbscyrl/image/upload/c_scale,q_49,w_1038/v1613778146/adshrink-premium-picture_dyyc8x.png",
+      style: {
+        marginBottom: "20px"
+      }
+    }, /*#__PURE__*/React.createElement("source", {
+      type: "video/mp4",
+      "data-src": "https://adshnk.com/video/adshrink-premium-explanation-video.mp4"
+    })), /*#__PURE__*/React.createElement("a", {
+      href: _adshrink.premiumpage + username,
+      style: {
+        marginTop: "5px"
+      },
+      className: "ui animated button fluid big secondary",
+      tabindex: "0",
+      style: {
+        position: "relative",
+        bottom: "0px",
+        background: "#13dc74"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "visible content"
+    }, "Premium ", /*#__PURE__*/React.createElement("br", null), " Access"), /*#__PURE__*/React.createElement("div", {
+      className: "hidden content"
+    }, /*#__PURE__*/React.createElement("i", {
+      className: "shop icon"
+    }))))))))), !device_format_tablet_computer && typeof device_format_tablet_computer !== 'undefined' && /*#__PURE__*/React.createElement("div", {
+      className: "ui grid mobile only center aligned"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "row"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "ui segments",
+      style: {
+        margin: "18px 0px"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "ui segment"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "ui header left aligned middle aligned",
+      style: {
+        color: "#444"
+      }
+    }, "Continue without Ad-Blocker", /*#__PURE__*/React.createElement("div", {
+      className: "sub header",
+      style: {
+        color: "#848484"
+      }
+    }, "To reach the destination page, please deactivate your Ad-Blocker and click \"Continue\"")), /*#__PURE__*/React.createElement("div", {
+      className: "ui animated button fluid big primary",
+      tabindex: "0",
+      style: {
+        position: "relative",
+        bottom: "0px"
+      },
+      onClick: e => this.props.on_continue(e)
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "visible content"
+    }, "Click here", /*#__PURE__*/React.createElement("br", null), "to Continue"), /*#__PURE__*/React.createElement("div", {
+      className: "hidden content"
+    }, /*#__PURE__*/React.createElement("i", {
+      className: "right arrow icon"
+    })))), /*#__PURE__*/React.createElement("div", {
+      className: "ui segment"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "ui header left aligned middle aligned",
+      style: {
+        color: "#444"
+      }
+    }, "Continue with Adshrink Premium", /*#__PURE__*/React.createElement("div", {
+      className: "sub header",
+      style: {
+        color: "#848484"
+      }
+    }, 'Say thanks to "' + username + '". Our creators love hearing from you and seeing how you are supporting them')), /*#__PURE__*/React.createElement("video", {
+      class: "lazy",
+      controls: true,
+      width: "100%",
+      "data-src": "https://adshnk.com/video/adshrink-premium-explanation-video.mp4",
+      "data-poster": "https://res.cloudinary.com/drzbscyrl/image/upload/c_scale,q_49,w_1038/v1613778146/adshrink-premium-picture_dyyc8x.png",
+      style: {
+        marginBottom: "20px"
+      }
+    }, /*#__PURE__*/React.createElement("source", {
+      type: "video/mp4",
+      "data-src": "https://adshnk.com/video/adshrink-premium-explanation-video.mp4"
+    })), /*#__PURE__*/React.createElement("a", {
+      href: _adshrink.premiumpage + username,
+      style: {
+        marginTop: "5px"
+      },
+      className: "ui animated button fluid big secondary",
+      tabindex: "0",
+      style: {
+        position: "relative",
+        bottom: "0px",
+        background: "#13dc74",
+        marginTop: "10px !important"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "visible content"
+    }, "Premium Access"), /*#__PURE__*/React.createElement("div", {
+      className: "hidden content"
+    }, /*#__PURE__*/React.createElement("i", {
+      className: "shop icon"
+    })))), paid_btc && /*#__PURE__*/React.createElement("div", {
+      className: "ui segment"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "ui header left aligned middle aligned",
+      style: {
+        color: "#444"
+      }
+    }, "Buy direct access to the link!", /*#__PURE__*/React.createElement("div", {
+      className: "sub header",
+      style: {
+        color: "848484"
+      }
+    }, "After purchase, the link will always remain directly accessible to your account"), /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("a", {
+      style: {
+        color: "rgb(221, 221, 221)"
+      }
+    }, " ", /*#__PURE__*/React.createElement("span", {
+      style: {
+        margin: "5px 0px 5px 5px"
+      },
+      className: "ui label red mini"
+    }, " Bitcoin ", /*#__PURE__*/React.createElement("span", {
+      style: {
+        marginLeft: "5px",
+        padding: "0px 5px",
+        borderRadius: "3px",
+        background: "white",
+        color: "red"
+      }
+    }, "HOT - Make your first Paid Link and get 80% of each sale"))))), /*#__PURE__*/React.createElement("div", {
+      className: "ui animated button fluid secondary",
+      tabindex: "0",
+      style: {
+        position: "relative",
+        bottom: "0px"
+      },
+      onClick: e => this.props.on_continue(e, 'btcpaidlink')
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "visible content"
+    }, "Buy direct access using Bitcoin"), /*#__PURE__*/React.createElement("div", {
+      className: "hidden content"
+    }, /*#__PURE__*/React.createElement("i", {
+      className: "btc icon"
+    })))))))));
+  }
+
+}
+
 class ComponentExtraScripts extends React.Component {
   constructor(props) {
     super(props);
@@ -6639,101 +6708,242 @@ class ComponentExtraScripts extends React.Component {
 
 }
 
-class ComponentRecaptcha extends React.Component {
+class ComponentVerifyBot extends React.Component {
   constructor(props) {
     super(props);
+
+    _defineProperty(this, "toast_msg", (msg, error = false) => {
+      if (!msg) return;
+
+      try {
+        if (error) toastr.error(msg, null, {
+          "positionClass": "toast-bottom-left"
+        });else toastr.info(msg, null, {
+          "positionClass": "toast-bottom-left"
+        });
+      } catch (error) {
+        console.warn('toast-error');
+      }
+    });
+
+    _defineProperty(this, "script_loaded", url => {
+      if (!url) url = "http://xxx.co.uk/xxx/script.js";
+      var scripts = document.getElementsByTagName('script');
+
+      for (var i = scripts.length; i--;) {
+        if (scripts[i].src == url) return true;
+      }
+
+      return false;
+    });
+
+    _defineProperty(this, "on_verify_recaptcha", async key => {
+      let that = this;
+      that.setState({
+        recaptcha: false,
+        fetching: true,
+        adblock: false,
+        rejectediab: false
+      });
+      let adblock = await checkAdBlocker();
+      let iab = await check_user_iab_permissions(true);
+      let tcf = window.iab_rejected;
+      let allow_alert = false;
+
+      if (adblock) {
+        alert(this.message.adblock);
+        if ("grecaptcha" in window) grecaptcha.reset();
+        this.setState({
+          adblock: true,
+          recaptcha: false,
+          fetching: false
+        });
+        return false;
+      } else if (tcf) {
+        allow_alert = confirm(this.message.iab + "." + this.message.allow);
+
+        if (allow_alert) {
+          OneTrust.AllowAll();
+          iab = await check_user_iab_permissions(true);
+          adblock = await checkAdBlocker();
+
+          if (adblock) {
+            alert(this.message.adblock);
+            if ("grecaptcha" in window) grecaptcha.reset();
+            this.setState({
+              adblock: true,
+              recaptcha: false,
+              fetching: false,
+              rejectediab: false
+            });
+            return false;
+          }
+        } else {
+          if ("grecaptcha" in window) grecaptcha.reset();
+          this.setState({
+            rejectediab: true,
+            recaptcha: false,
+            fetching: false,
+            rejectediab: true
+          });
+          return false;
+        }
+
+        window.location.reload();
+      }
+
+      if (this.state.adblock || this.state.rejectediab) return false;
+      iab = await check_user_iab_permissions(true); //https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js
+
+      let script_aloaded = this.script_loaded('https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js');
+      if (!script_aloaded) await $script('https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js', 'adsense-by-google');
+      const server_recaptcha = $.post(___reactjsD.verification_recaptcha, {
+        v: 'v2',
+        response: key
+      }).then(res => {
+        if (res.success) {
+          that.setState({
+            recaptcha: true,
+            fetching: false
+          });
+          ga('send', 'event', 'Recapthca', 'prototype', 'Verify-true', 100);
+        } else {
+          ga('send', 'event', 'Recapthca', 'prototype', 'Verify-false', 10);
+          that.setState({
+            recaptcha: false,
+            fetching: false
+          });
+        }
+      }).catch(error => {
+        that.toast_msg(error, true);
+        ga('send', 'event', 'Recapthca', 'prototype', 'Verify-fail', 0);
+        that.setState({
+          recaptcha: false,
+          fetching: false
+        });
+      });
+    });
+
+    _defineProperty(this, "on_verify_recaptcha_v3", async event => {
+      axios.post(___reactjsD.verification_recaptcha, objToFormdata({
+        response: event,
+        v: 'v3'
+      })) //axios.post('https://www.shrink-service.it/api-extension/prototype/recaptcha', objToFormdata({booleanRecaptchaV3: true, postkey: token, v: 3}))
+      .then(function (result) {
+        if (getNestedObj(() => result.data.success)) window[___reactjsD.o] = { ...window[___reactjsD.o],
+          recapv3: getNestedObj(() => result.data)
+        }; //result.data.g_response[0]
+      }).catch(function (error) {
+        console.warn('grecaptcha.execute.server', error);
+      });
+    });
+
+    _defineProperty(this, "on_render_recaptcha", async () => {
+      let that = this;
+      $script('https://www.google.com/recaptcha/api.js?render=' + ___reactjsD.pk3_recaptcha, 'recaptcha_antibot');
+      $script.ready('recaptcha_antibot', () => {
+        grecaptcha.ready(() => {
+          grecaptcha.render(document.getElementsByClassName(that.divname)[0], {
+            sitekey: ___reactjsD.pk_recaptcha,
+            callback: function (event) {
+              that.on_verify_recaptcha(event);
+            }
+          });
+          grecaptcha.execute(___reactjsD.pk3_recaptcha, {
+            action: 'skip'
+          }).then(function (token) {
+            that.on_verify_recaptcha_v3(token);
+          });
+        });
+      });
+      let adblock = await checkAdBlocker();
+      let iab = await check_user_iab_permissions();
+      let tcf = window.iab_rejected;
+      this.setState({
+        adblock: adblock,
+        rejectediab: tcf
+      });
+    });
+
     this.state = {
-      script: {
-        recaptcha: false
-      },
       fetching: false,
-      recaptcha: false
+      recaptcha: false,
+      rendered: false,
+      adblock: false,
+      rejectediab: false
     };
-    this._is_mounted = false;
-    this.done = {};
-    this.onScriptLoad = this.onScriptLoad.bind(this);
-    this.onScriptLoaded = this.onScriptLoaded.bind(this);
-    this.onClickOverDiv = this.onClickOverDiv.bind(this);
-    this.onSetPropertiesDiv = this.onSetPropertiesDiv.bind(this);
-    this.onVerifyRecaptcha = this.onVerifyRecaptcha.bind(this);
-    this.onClickContinue = this.onClickContinue.bind(this);
-    this.onSetButton = this.onSetButton.bind(this);
-    this.interval_countdown = false;
+    this.divname = 'g-recaptcha-antibot';
+    this.message = {
+      'adblock': 'Disable your Ad-block',
+      'iab': 'Accept data processing in order to show advertising',
+      'allow': 'Click here to accept'
+    };
   }
 
   componentDidMount() {
-    this._is_mounted = true;
-    this.onScriptLoad('recaptcha', 'https://www.google.com/recaptcha/api.js?render=' + ___reactjsD.pk3_recaptcha);
+    window.lazyLoadInstance.update();
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    if (nextState.script !== this.state.script) {
-      return true;
-    }
-
-    if (nextState.recaptcha !== this.state.recaptcha) {
-      return true;
-    }
-
-    if (nextProps.type !== this.props.type) {
-      return true;
-    }
-
-    if (nextProps.url !== this.props.url) {
-      return true;
-    }
-
+    if (nextProps !== this.props) return true;
+    if (nextState.recaptcha !== this.state.recaptcha || nextState.rendered !== this.state.rendered || nextState.adblock !== this.state.adblock || nextState.rejectediab !== this.state.rejectediab) return true;
     return false;
   }
 
   componentDidUpdate(nextProps, nextState) {
-    if (getNestedObj(() => nextState.script.recaptcha) !== getNestedObj(() => this.state.script.recaptcha)) this.onScriptLoaded(nextProps, nextState);
-
     if (nextState.recaptcha !== this.state.recaptcha) {
-      this.props.skip();
-      this.onSetButton();
-
-      try {
-        toastr.info('Loading.. <br/> <a href="' + _adshrink.instagram + '" target="_blank"><i class="instagram icon"></i> Follow </a> <a href="' + _adshrink.facebook + '" target="_blank"><i class="facebook f icon"></i> Follow </a>', null, {
-          "positionClass": "toast-bottom-left"
-        });
-      } catch (error) {
-        console.warn('toastr-error');
-      }
+      if (this.state.recaptcha) this.props.pass(true);
     }
 
-    if (nextProps.url !== this.props.url) {
-      $('#sbs_loading').removeClass('disabled loading');
+    if (nextState.render !== this.state.rendered) {
+      if (this.state.rendered) this.on_render_recaptcha();
     }
   }
 
-  onScriptLoad(scriptname, src) {
-    const that = this;
-    let script;
-    let request_script = new_script(src);
-    request_script.then(function (resolve) {
-      script = Object.assign({}, that.state.script, {
-        [scriptname]: true
-      });
-      that.setState({
-        script
-      });
-    }).catch(function (reject) {
-      script = Object.assign({}, that.state.script, {
-        [scriptname]: false
-      });
-      that.setState({
-        script
-      });
+  render() {
+    const {
+      rendered,
+      fetching,
+      recaptcha,
+      adblock,
+      rejectediab
+    } = this.state || false;
+    if (!rendered) this.setState({
+      rendered: true
     });
+    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+      class: "ui bulleted list red"
+    }, adblock && /*#__PURE__*/React.createElement("div", {
+      class: "item"
+    }, this.message.adblock), rejectediab && /*#__PURE__*/React.createElement("div", {
+      class: "item"
+    }, this.message.iab, ". ", /*#__PURE__*/React.createElement("br", null), " ", /*#__PURE__*/React.createElement("a", {
+      onClick: () => {
+        OneTrust.AllowAll();
+      }
+    }, this.message.allow))), !recaptcha && /*#__PURE__*/React.createElement("div", {
+      className: this.divname
+    }), recaptcha && /*#__PURE__*/React.createElement("div", {
+      className: "not_a_bot"
+    }));
   }
 
-  onScriptLoaded(p, s) {
-    const that = this;
-    if (!this._is_mounted) return false;
-    if (getNestedObj(() => this.done.recaptcha)) return false;
-    $(document).ready(() => {
-      if (window.hasOwnProperty('grecaptcha')) {
+}
+
+class ComponentRecaptcha extends React.Component {
+  constructor(props) {
+    super(props);
+
+    _defineProperty(this, "on_render_recaptcha", () => {
+      let that = this;
+
+      if (!getNestedObj(() => this.props.mode, false)) {
+        console.warn('Adshrink::error', 'mode not selected');
+        return false;
+      }
+
+      $script('https://www.google.com/recaptcha/api.js?render=' + ___reactjsD.pk3_recaptcha, 'grecaptcha');
+      $script.ready('grecaptcha', () => {
         grecaptcha.ready(() => {
           grecaptcha.render(document.getElementsByClassName('g-recaptcha')[0], {
             sitekey: ___reactjsD.pk_recaptcha,
@@ -6757,60 +6967,63 @@ class ComponentRecaptcha extends React.Component {
             });
           });
         });
-      } else {
-        try {
-          toastr.error('Unable to load captcha, reload.');
-        } catch (error) {
-          console.warn('toastr-error');
-        }
-      }
+      });
     });
-    this.done = { ...this.done,
-      recaptcha: true
-    }; //console.info('ComponentRecaptcha::onScriptLoaded', true);
-  }
 
-  onClickOverDiv(event, type = 'overpoprec') {
-    event.preventDefault();
-    const detalMouse = getDeltaMouse();
-    window[___reactjsD.o] = Object.assign({}, window[___reactjsD.o], {
-      skipMouse: {
-        time: (Date.now() - timerStart) / 1000 + 's'
+    this.state = {
+      script: {
+        recaptcha: false
       },
-      delta: detalMouse
-    });
-    if (___reactjsD.system_pop_interval) return false;
-    if (type = 'overpoprec') $('.g-recaptcha').removeClass('overp');
-    this.system_pop = window.open(_adshrink[type], '_blank');
-    this.system_pop_interval = setInterval(() => {
-      ___reactjsD.system_pop_interval = true;
-
-      try {
-        if (this.system_pop.closed) {
-          clearInterval(this.system_pop_interval);
-          if (type = 'overpoprec') this.onSetPropertiesDiv();
-          return false;
-        }
-      } catch (error) {
-        if (type = 'overpoprec') this.onSetPropertiesDiv();
-      }
-    }, 1000);
+      fetching: false,
+      recaptcha: false
+    };
+    this.done = {};
+    this.onVerifyRecaptcha = this.onVerifyRecaptcha.bind(this);
+    this.onClickContinue = this.onClickContinue.bind(this);
+    this.onSetButton = this.onSetButton.bind(this);
+    this.interval_countdown = false;
   }
 
-  onSetPropertiesDiv() {
-    const {
-      recaptcha
-    } = getNestedObj(() => this.state);
-    if (recaptcha) return false;
+  componentDidMount() {}
 
-    try {
-      toastr.error('You can\'t close the pop until the reCaptcha is completed', 'Complete reCaptcha', 20);
-    } catch (error) {
-      console.warn('toastr-error');
+  shouldComponentUpdate(nextProps, nextState) {
+    if (nextState.script !== this.state.script) {
+      return true;
     }
 
-    $('.g-recaptcha').addClass('overp');
-    ___reactjsD.system_pop_interval = false;
+    if (nextState.recaptcha !== this.state.recaptcha) {
+      return true;
+    }
+
+    if (nextProps !== this.props) {
+      return true;
+    }
+
+    return false;
+  }
+
+  componentDidUpdate(nextProps, nextState) {
+    if (nextState.recaptcha !== this.state.recaptcha) {
+      this.props.skip();
+      this.onSetButton();
+
+      try {
+        toastr.info('Loading.. <br/> <a href="' + _adshrink.instagram + '" target="_blank"><i class="instagram icon"></i> Follow </a> <a href="' + _adshrink.facebook + '" target="_blank"><i class="facebook f icon"></i> Follow </a>', null, {
+          "positionClass": "toast-bottom-left"
+        });
+      } catch (error) {
+        console.warn('toastr-error');
+      }
+    }
+
+    if (nextProps.url !== this.props.url) {
+      $('#sbs_loading').removeClass('disabled loading');
+    }
+
+    if (nextProps.mode !== this.props.mode) {
+      console.log(nextProps, this.props);
+      this.on_render_recaptcha();
+    }
   }
 
   onVerifyRecaptcha(key) {
@@ -6830,7 +7043,14 @@ class ComponentRecaptcha extends React.Component {
         ga('send', 'event', 'Recapthca', 'prototype', 'Verify-false', 10);
       }
     }).catch(error => {
-      console.warn('onVerifyRecaptcha::error', error);
+      try {
+        toastr.error(error, null, {
+          "positionClass": "toast-bottom-left"
+        });
+      } catch (error) {
+        console.warn('toast-error');
+      }
+
       ga('send', 'event', 'Recapthca', 'prototype', 'Verify-fail', 0);
     });
     /*********************************/
@@ -6948,7 +7168,17 @@ class ComponentRecaptcha extends React.Component {
         }
 
         if (window.cd >= _adshrink.skiptime) {
-          $('#final_redirect').attr('href', url);
+          var rurl = url;
+          /* da togliere */
+
+          try {
+            rurl = new URL(rurl);
+            if (getNestedObj(() => rurl.protocol) === 'http:') rurl = "http://adshrink.it/redirectwos.php?uri=" + window.btoa(rurl);
+          } catch (error) {
+            console.warn('new URL() error', rurl);
+          }
+
+          $('#final_redirect').attr('href', rurl);
           $('#final_redirect_text').text('');
           clearInterval(that.interval_countdown);
           ga('send', 'event', 'Destination', 'prototype', 'Countdown-finish', 100);
@@ -6986,23 +7216,10 @@ class ComponentRecaptcha extends React.Component {
     } = this.state || false;
     return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
       id: "system_center_card_bounce"
-    }, /*#__PURE__*/React.createElement("style", null, " \
-                    //.ovpo { width: 304px; height: 78px; display: block; background: transparent; z-index: 11; display: none;} \
-                    //.g-recaptcha { position: absolute; width: 100%; margin-left: calc(50% - 162px); } \
-                    //.overp { z-index: -1 !important; } \
-                    #system_center_card_bounce { display: none;} \
-                    .g-recaptcha > div:first-of-type { margin: 0 auto; } \
-                    //@media screen and (min-width: 768px) { .g-recaptcha > div:first-of-type { position: relative; top: 38px } } \
-                "), !recaptcha && /*#__PURE__*/React.createElement(React.Fragment, null, true == false && /*#__PURE__*/React.createElement("div", {
-      className: "ovpo",
-      onClick: e => this.onClickOverDiv(e)
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "g-recaptcha overp",
+    }, /*#__PURE__*/React.createElement("style", null, " .g-recaptcha > div:first-of-type { margin: 0 auto; } "), !recaptcha && /*#__PURE__*/React.createElement("div", {
+      className: "g-recaptcha",
       "data-sitekey": ___reactjsD.pk_recaptcha
-    })), /*#__PURE__*/React.createElement("div", {
-      className: "g-recaptcha overp",
-      "data-sitekey": ___reactjsD.pk_recaptcha
-    })), recaptcha && /*#__PURE__*/React.createElement("div", {
+    }), recaptcha && /*#__PURE__*/React.createElement("div", {
       className: "ui segment basic center aligned middle aligned",
       style: {
         margin: "0px"
@@ -7500,7 +7717,7 @@ class Subscribers extends React.Component {
     });
 
     this.state = {
-      premium: [],
+      premium: getNestedObj(() => this.props.premium, []),
       page: 1
     };
   }
@@ -7516,9 +7733,7 @@ class Subscribers extends React.Component {
   }
 
   componentDidUpdate(nextProps, nextState) {
-    if (nextProps.u !== this.props.u) {
-      if (!isEmpty(getNestedObj(() => this.props.u.id))) this.search_subscribers();
-    }
+    if (nextProps !== this.props) {}
   }
 
   render() {
@@ -7698,13 +7913,13 @@ class LastLinks extends React.Component {
         title: title,
         description: '',
         image: '',
-        icon: 'https://www.google.com/s2/favicons?domain=' + domain
+        icon: ___reactjsD.favicon + domain
       };
       if (meta === 'empty' || isEmpty(meta)) return {
         title: 'AdShrink.it - Unnamed',
         description: 'No description available..',
         image: '',
-        icon: 'https://www.google.com/s2/favicons?domain=' + domain
+        icon: ___reactjsD.favicon + domain
       };
       if (!isEmpty(meta) && typeof meta === 'string') meta = JSON.parse(meta);
 
@@ -7854,11 +8069,10 @@ class LastLinks extends React.Component {
       }
     });
 
-    _defineProperty(this, "print_list", () => {
+    _defineProperty(this, "print_list", (where = 'state') => {
       let that = this;
-      let {
-        links
-      } = this.state || [];
+      let links = [];
+      if (where === 'state') links = getNestedObj(() => this.state.links) || [];else if (where === 'props') links = getNestedObj(() => this.props.lastlinks.data) || [];
       var html = [];
       Object.keys(links).map(elem => {
         let {
@@ -7881,7 +8095,9 @@ class LastLinks extends React.Component {
         }, /*#__PURE__*/React.createElement("h5", {
           className: "ui header"
         }, /*#__PURE__*/React.createElement("img", {
-          src: meta_dec.icon
+          className: "lazy",
+          alt: "icon",
+          "data-src": meta_dec.icon
         }), /*#__PURE__*/React.createElement("div", {
           className: "content"
         }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("small", {
@@ -7890,7 +8106,7 @@ class LastLinks extends React.Component {
             color: "#c9c9c9"
           }
         }, domain.toUpperCase())), " ", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("a", {
-          href: ___reactjsD.host3 + "/" + artcode,
+          href: ___reactjsD.host + "/" + artcode,
           style: {
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -8001,7 +8217,30 @@ class LastLinks extends React.Component {
       style: {
         paddingRight: '10px'
       }
-    }, this.print_list());
+    }, this.print_list('props'));
+  }
+
+}
+
+class RenderUpdated extends React.Component {
+  constructor(props) {
+    super(props);
+
+    _defineProperty(this, "on_update", () => {
+      setTimeout(function () {
+        window.lazyLoadInstance.update();
+        $script('https://z-na.amazon-adsystem.com/widgets/onejs?MarketPlace=US&adInstanceId=ee77c3c5-b9e7-4fe5-9138-dfcf9b59e5ad', 'aws');
+      }, 500);
+      return /*#__PURE__*/React.createElement("updated", null);
+    });
+
+    this.state = {};
+  }
+
+  componentDidMount() {}
+
+  render() {
+    return /*#__PURE__*/React.createElement("upixel", null, this.on_update());
   }
 
 }
@@ -8022,7 +8261,8 @@ class Wikipedia extends React.Component {
         userid
       } = u || false;
       let data = {
-        wiki: JSON.stringify(wiki)
+        wiki: JSON.stringify(wiki),
+        referrer: getNestedObj(() => window.document.referrer)
       };
       if (host) data = { ...data,
         domain: search
@@ -8138,7 +8378,8 @@ class Wikipedia extends React.Component {
       } = this.props || false;
       const {
         wiki_result,
-        wiki_errors
+        wiki_errors,
+        updated
       } = this.state || [];
       const {
         id,
@@ -8156,7 +8397,7 @@ class Wikipedia extends React.Component {
           wordcount
         } = wiki_result[wiki];
         snippet = snippet.replace(/<(\/*)span[^>]*>/g, '<$1b>');
-        let icon = host ? 'https://www.google.com/s2/favicons?domain=' + this.props.search : false;
+        let icon = host ? ___reactjsD.favicon + this.props.search : ___reactjsD.favicon + 'adshrink.it';
 
         if (!host) {
           html.push( /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
@@ -8180,8 +8421,10 @@ class Wikipedia extends React.Component {
           }, /*#__PURE__*/React.createElement("div", {
             className: "content"
           }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("img", {
+            alt: "icon",
+            className: "lazy",
             width: "20",
-            src: icon
+            "data-src": icon
           }), " ", title, " ", /*#__PURE__*/React.createElement("small", {
             style: {
               color: '#c9c9c9'
@@ -8202,12 +8445,7 @@ class Wikipedia extends React.Component {
             target: "_blank"
           }, "Creative Commons"), ")")), /*#__PURE__*/React.createElement("div", {
             className: "ui segment"
-          }, /*#__PURE__*/React.createElement(LastLinks, {
-            u: {
-              id: id,
-              userid: userid
-            }
-          })), /*#__PURE__*/React.createElement("div", {
+          }, getNestedObj(() => this.props.html_lastlinks)), /*#__PURE__*/React.createElement("div", {
             className: "ui secondary segment small"
           }, /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("i", {
             className: "external square alternate icon"
@@ -8249,12 +8487,7 @@ class Wikipedia extends React.Component {
             }
           }, "Content/Link"))))), /*#__PURE__*/React.createElement("div", {
             className: "ui segment"
-          }, /*#__PURE__*/React.createElement(LastLinks, {
-            u: {
-              id: id,
-              userid: userid
-            }
-          })), /*#__PURE__*/React.createElement("div", {
+          }, getNestedObj(() => this.props.html_lastlinks)), /*#__PURE__*/React.createElement("div", {
             className: "ui secondary segment small"
           }, /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("i", {
             className: "external square alternate icon"
@@ -8262,13 +8495,15 @@ class Wikipedia extends React.Component {
         }
       }
 
+      html.push( /*#__PURE__*/React.createElement(RenderUpdated, null));
       return html;
     });
 
     this.state = {
       wiki_result: [],
       wiki_errors: [],
-      whois: []
+      whois: [],
+      updated: 0
     };
   }
 
@@ -8321,6 +8556,10 @@ class Wikipedia extends React.Component {
 }
 
 function AwsNative(props) {
+  const load_script = () => {
+    return /*#__PURE__*/React.createElement("small", null, " • loaded");
+  };
+
   return /*#__PURE__*/React.createElement("div", {
     className: "ui segments",
     id: "wiki_related_content"
@@ -8328,13 +8567,10 @@ function AwsNative(props) {
     className: "ui secondary segment"
   }, /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("i", {
     className: "aws icon"
-  }), " ", /*#__PURE__*/React.createElement("b", null, "Recommended products"))), /*#__PURE__*/React.createElement("div", {
+  }), " ", /*#__PURE__*/React.createElement("b", null, "Recommended products"), load_script())), /*#__PURE__*/React.createElement("div", {
     className: "ui segment"
   }, /*#__PURE__*/React.createElement("div", {
-    id: "amzn-assoc-ad-f69f8197-faf5-45c6-96f9-52267a2acce9"
-  }), /*#__PURE__*/React.createElement("script", {
-    async: true,
-    src: "//z-na.amazon-adsystem.com/widgets/onejs?MarketPlace=US&adInstanceId=f69f8197-faf5-45c6-96f9-52267a2acce9"
+    id: "amzn-assoc-ad-ee77c3c5-b9e7-4fe5-9138-dfcf9b59e5ad"
   })));
 }
 
@@ -8617,6 +8853,12 @@ class ComponentComplete extends React.Component {
       }
     }); //console.log(5888, data, this.get_host());
 
+    /*
+    <div className="ui segment basic custom-padding-seg" >
+        <Wikipedia u={{id, userid}} search={ this.getTitle() } description={ getNestedObj(() => this.getMeta().description ) } />
+    </div>
+    */
+
     return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("style", null, " \
                 #centered_card_shrink_data { width: 330px !important; z-index: 10 !important; } \
                 .top-m { margin-top: 5px !important; } \
@@ -8631,22 +8873,9 @@ class ComponentComplete extends React.Component {
     }, this.getTitle(), /*#__PURE__*/React.createElement("div", {
       className: "sub header"
     }, /*#__PURE__*/React.createElement("small", null, this.getSecure()), " ", /*#__PURE__*/React.createElement("br", null), getNestedObj(() => this.getMeta().description))), /*#__PURE__*/React.createElement("div", {
-      className: "ui mini message"
-    }, /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("i", {
-      className: "info circle icon"
-    }), " ", /*#__PURE__*/React.createElement("a", {
-      style: {
-        color: "inherit"
-      },
-      href: "#comments_section"
-    }, language.new.premium_info[0], /*#__PURE__*/React.createElement("b", null, /*#__PURE__*/React.createElement("small", null, language.new.premium_info[1])), language.new.premium_info[2], /*#__PURE__*/React.createElement("b", null, " ", language.new.premium_info[3], " "), language.new.premium_info[4], " w/ Google Sign.")))), /*#__PURE__*/React.createElement("div", {
-      className: "sixteen wide column"
-    }), /*#__PURE__*/React.createElement("div", {
-      className: "sixteen wide column"
-    }, /*#__PURE__*/React.createElement("div", {
       className: "ui divider"
     })), /*#__PURE__*/React.createElement("div", {
-      className: "eight wide computer sixteen wide tablet sixteen wide mobile column"
+      className: "six wide computer sixteen wide tablet sixteen wide mobile column"
     }, /*#__PURE__*/React.createElement("div", {
       className: "ui grid stackable"
     }, /*#__PURE__*/React.createElement("div", {
@@ -8675,12 +8904,13 @@ class ComponentComplete extends React.Component {
       className: "ui segment basic",
       id: "comments_section"
     }, component_comments)), /*#__PURE__*/React.createElement("div", {
-      className: "eight wide computer sixteen wide tablet sixteen wide mobile column"
+      className: "ten wide computer sixteen wide tablet sixteen wide mobile column"
     }, /*#__PURE__*/React.createElement(AdsenseBanner, {
-      size: 'medium_rectangle'
+      size: 'medium_rectangle_responsive'
     })))), /*#__PURE__*/React.createElement("div", {
       className: "ui segment basic custom-padding-seg"
     }, /*#__PURE__*/React.createElement(Wikipedia, {
+      html_lastlinks: getNestedObj(() => this.props.html_lastlinks),
       u: {
         id,
         userid
@@ -8690,14 +8920,7 @@ class ComponentComplete extends React.Component {
       host: true
     })), /*#__PURE__*/React.createElement("div", {
       className: "ui segment basic custom-padding-seg"
-    }, /*#__PURE__*/React.createElement(Wikipedia, {
-      u: {
-        id,
-        userid
-      },
-      search: this.getTitle(),
-      description: getNestedObj(() => this.getMeta().description)
-    })));
+    }, /*#__PURE__*/React.createElement(AwsNative, null)));
   }
 
 }
@@ -8747,11 +8970,10 @@ class LastNews extends React.Component {
       });
     });
 
-    _defineProperty(this, "print_list", () => {
+    _defineProperty(this, "print_list", (where = 'state') => {
       let html = [];
-      let {
-        news
-      } = this.state || [];
+      let news = [];
+      if (where === 'state') news = getNestedObj(() => this.state.news, []) || [];else if (where === 'props') news = getNestedObj(() => this.props.news.data, []) || [];
       let {
         dev
       } = this.props || 'Smartphone';
@@ -8782,15 +9004,18 @@ class LastNews extends React.Component {
           key: element,
           className: "ui card " + (desktop_tablet ? "horizontal" : "")
         }, /*#__PURE__*/React.createElement("div", {
+          alt: title,
           className: "image",
           style: desktop_tablet ? {
-            height: "250px",
-            width: "250px"
+            height: "220px",
+            width: "260px"
           } : {
             width: "100%"
           }
         }, /*#__PURE__*/React.createElement("img", {
-          src: urlToImage
+          alt: title,
+          className: "lazy",
+          "data-src": urlToImage
         })), /*#__PURE__*/React.createElement("div", {
           className: "content"
         }, /*#__PURE__*/React.createElement("div", {
@@ -8799,7 +9024,7 @@ class LastNews extends React.Component {
           className: "date"
         }, /*#__PURE__*/React.createElement("b", null, name.toString().toLowerCase()), " ", /*#__PURE__*/React.createElement("small", null, /*#__PURE__*/React.createElement("a", null, moment(publishedAt).fromNow())))), /*#__PURE__*/React.createElement("a", {
           href: url,
-          className: "header"
+          className: "header newsheader"
         }, title), /*#__PURE__*/React.createElement("div", {
           className: "description"
         }, newdesc), /*#__PURE__*/React.createElement("div", {
@@ -8819,7 +9044,21 @@ class LastNews extends React.Component {
     this._is_mounted = false;
   }
 
-  componentDidMount() {}
+  componentDidMount() {
+    var glide = new Glide('#slidenews', {
+      type: 'carousel',
+      perView: 2,
+      focusAt: 'center',
+      hoverpause: true,
+      autoplay: 4000,
+      breakpoints: {
+        800: {
+          perView: 1
+        }
+      }
+    });
+    glide.mount();
+  }
 
   shouldComponentUpdate(nextProps, nextState) {
     if (nextState !== this.state) return true;
@@ -8828,27 +9067,29 @@ class LastNews extends React.Component {
   }
 
   componentDidUpdate(nextProps, nextState) {
-    if (nextProps !== this.props) {
-      this.on_fetch_news();
+    if (nextProps !== this.props) {//this.on_fetch_news();
     }
 
     if (nextState.news !== this.state.news) {
+      /*
       var glide = new Glide('#slidenews', {
-        type: 'carousel',
-        perView: 2,
-        focusAt: 'center',
-        hoverpause: true,
-        autoplay: 4000,
-        breakpoints: {
-          1300: {
-            perView: 2
-          },
-          700: {
-            perView: 1
+          type: 'carousel',
+          perView: 2,
+          focusAt: 'center',
+          hoverpause: true,
+          autoplay: 4000,
+          breakpoints: {
+              1300: {
+                  perView: 2
+              },
+              700: {
+                  perView: 1
+              }
           }
-        }
-      });
+      })
+      
       glide.mount();
+      */
     }
   }
 
@@ -8863,7 +9104,7 @@ class LastNews extends React.Component {
     if (!this._is_mounted) this._is_mounted = true;
     let cc = getNestedObj(() => vpn.country.code).toString().toLowerCase() || 'us';
     return /*#__PURE__*/React.createElement(React.Fragment, null, news && /*#__PURE__*/React.createElement("div", {
-      className: "ui segment basic custom-padding-seg"
+      className: "ui segment basic zero-custom-padding-seg"
     }, /*#__PURE__*/React.createElement("h2", {
       className: "ui header"
     }, /*#__PURE__*/React.createElement("i", {
@@ -8884,7 +9125,7 @@ class LastNews extends React.Component {
       className: "glide__track"
     }, /*#__PURE__*/React.createElement("ul", {
       className: "glide__slides"
-    }, this.print_list())))));
+    }, this.print_list('props'))))));
   }
 
 }
@@ -9000,6 +9241,10 @@ class SemanticNavContent extends React.Component {
 
     _defineProperty(this, "select_mode", async selected => {
       let adblock = await checkAdBlocker();
+<<<<<<< Updated upstream
+=======
+      let iab = await check_user_iab_permissions(true);
+>>>>>>> Stashed changes
       let tcf = window.iab_rejected;
 
       if (adblock) {
@@ -9073,12 +9318,17 @@ class SemanticNavContent extends React.Component {
       }), language.new.support));
     });
 
+<<<<<<< Updated upstream
     _defineProperty(this, "on_iab_rej", () => {
       console.warn('on_iab_rej', window.iab_rejected);
+=======
+    _defineProperty(this, "on_iab_rej", async () => {
+      let iab = await check_user_iab_permissions(true);
+>>>>>>> Stashed changes
 
       if (window.iab_rejected) {
         OneTrust.AllowAll();
-        window.location.reload();
+        window.location.reload(); //window.__tcfapi('displayConsentUi',2, function() {});
       } else {
         this.forceUpdate();
       }
@@ -9346,7 +9596,9 @@ class SemanticNavContent extends React.Component {
     }, /*#__PURE__*/React.createElement("div", {
       className: "ui image fluid"
     }, /*#__PURE__*/React.createElement("img", {
-      src: this.getImage()
+      alt: "preview",
+      className: "lazy",
+      "data-src": this.getImage()
     }))), /*#__PURE__*/React.createElement("div", {
       className: "seven wide column middle aligned"
     }, /*#__PURE__*/React.createElement("h2", {
@@ -9480,20 +9732,30 @@ class SemanticNavContent extends React.Component {
     }), " "), /*#__PURE__*/React.createElement("button", {
       className: "ui button primary fluid",
       onClick: e => $('#modal_premium_infos').modal('show')
-    }, "Premium Access"), /*#__PURE__*/React.createElement("a", {
-      style: {
-        marginTop: "10px !important"
-      },
-      href: "#comments_section"
-    }, "Leave a comment..")), !isEmpty(data) && !adblock && type !== 'Exclusive' && /*#__PURE__*/React.createElement(ComponentRecaptcha, {
+    }, "Premium Access")), !isEmpty(data) && !adblock && type !== 'Exclusive' && true === false && /*#__PURE__*/React.createElement(ComponentRecaptcha, {
       type: type,
       skip: skip,
+      url: url,
+      mode: mode
+    }), !isEmpty(data) && type !== 'Exclusive' && mode && /*#__PURE__*/React.createElement(ComponentGetDestination, {
+      type: type,
+      skip: skip,
+<<<<<<< Updated upstream
       url: url
     }), adblock && type !== 'Exclusive' && !window.iab_rejected && /*#__PURE__*/React.createElement("div", {
       className: "ui red floating message"
     }, /*#__PURE__*/React.createElement("p", null, " ", /*#__PURE__*/React.createElement("i", {
       className: "minus circle icon"
     }), " Please disable your ad blocker and reload!")), type === 'Exclusive' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+=======
+      url: url,
+      mode: mode
+    }), !window.iab_rejected && adblock && type !== 'Exclusive' && true === false && /*#__PURE__*/React.createElement("div", {
+      className: "ui red floating message"
+    }, /*#__PURE__*/React.createElement("p", null, " ", /*#__PURE__*/React.createElement("i", {
+      className: "minus circle icon"
+    }), " Please disable your ad blocker and reload!")), !window.iab_rejected && type === 'Exclusive' && true === false && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+>>>>>>> Stashed changes
       className: "ui red floating message"
     }, /*#__PURE__*/React.createElement("p", null, " ", /*#__PURE__*/React.createElement("i", {
       className: "minus circle icon"
@@ -9501,6 +9763,179 @@ class SemanticNavContent extends React.Component {
       className: "ui button primary fluid",
       onClick: e => $('#modal_premium_infos').modal('show')
     }, "Become a Premium member")))));
+  }
+
+}
+
+class ComponentGetDestination extends React.Component {
+  constructor(props) {
+    super(props);
+
+    _defineProperty(this, "on_get", async () => {
+      let that = this;
+      let adblock = await checkAdBlocker();
+      let iab = await check_user_iab_permissions(true);
+      let tcf = window.iab_rejected;
+
+      if (adblock) {
+        that.setState({
+          adblock: true
+        });
+        return false;
+      } else if (tcf) {
+        that.setState({
+          adblock: true
+        });
+        return false;
+      }
+
+      that.setState({
+        adblock: false,
+        rejectediab: false,
+        fetching: true
+      });
+      this.props.skip();
+    });
+
+    _defineProperty(this, "on_url", () => {
+      this.on_countdown(true);
+      this.forceUpdate();
+    });
+
+    _defineProperty(this, "on_allow_iab", () => {
+      try {
+        if ("OneTrust" in window) OneTrust.AllowAll();
+        window.location.reload();
+      } catch (error) {
+        console.warn('Catched some error from on_allow_iab: ', error);
+      }
+    });
+
+    _defineProperty(this, "on_countdown", (loaded = false) => {
+      let {
+        url
+      } = this.props || false;
+      let that = this;
+      window.cd = 0;
+      this.interval_countdown = setInterval(function () {
+        window.cd++;
+        $('#final_redirect_text').text('Wait .. ' + (_adshrink.skiptime - window.cd) + ' sec and ');
+
+        if (window.cd === 5) {
+          //$('#modal_surveyplanet').modal('show');
+          $('#modal_premium_infos').modal('show');
+        }
+
+        if (window.cd >= _adshrink.skiptime) {
+          var rurl = url;
+          /* da togliere */
+
+          try {
+            rurl = new URL(rurl);
+            if (getNestedObj(() => rurl.protocol) === 'http:') rurl = "http://adshrink.it/redirectwos.php?uri=" + window.btoa(rurl);
+          } catch (error) {
+            console.warn('new URL() error', rurl);
+          }
+
+          $('#final_redirect').attr('href', rurl);
+          $('#final_redirect_text').text('');
+          clearInterval(that.interval_countdown);
+          ga('send', 'event', 'Destination', 'prototype', 'Countdown-finish', 100);
+        }
+      }, 1000);
+    });
+
+    this.state = {
+      fetching: false,
+      adblock: false,
+      rejectediab: false
+    };
+    this.message = {
+      'adblock': 'Disable your Ad-block and reload.',
+      'iab': 'Accept data processing in order to show advertising',
+      'allow': 'Click here to accept'
+    };
+    this.interval_countdown = false;
+  }
+
+  componentDidMount() {
+    this.on_get();
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (nextProps !== this.props) return true;
+    if (nextState !== this.state) return true;
+    return false;
+  }
+
+  componentDidUpdate(nextProps, nextState) {
+    if (nextProps.url !== this.props.url) {
+      this.on_url();
+    }
+  }
+
+  render() {
+    let {
+      adblock,
+      rejectediab
+    } = this.state || true;
+    let {
+      mode,
+      type,
+      skip,
+      url
+    } = this.props || false;
+    let blocks = adblock || rejectediab ? true : false;
+    let exclusive = type === 'Exclusive' ? true : false;
+    let loaded = !exclusive && url ? true : false;
+    return /*#__PURE__*/React.createElement(React.Fragment, null, blocks && /*#__PURE__*/React.createElement("button", {
+      className: "ui right labeled icon button primary huge fluid",
+      style: {
+        marginBottom: "10px",
+        backgroundColor: "rgb(220 19 19)"
+      },
+      onClick: () => this.on_allow_iab()
+    }, "Disable your Ad-block and reload ", /*#__PURE__*/React.createElement("i", {
+      className: "recycle icon"
+    }), " "), !blocks && /*#__PURE__*/React.createElement(React.Fragment, null, exclusive && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+      className: "ui red floating message"
+    }, /*#__PURE__*/React.createElement("p", null, " ", /*#__PURE__*/React.createElement("i", {
+      className: "minus circle icon"
+    }), " ", /*#__PURE__*/React.createElement("b", null, "Exclusive content."), " You must have a Premium account to continue!")), /*#__PURE__*/React.createElement("button", {
+      className: "ui button primary fluid",
+      onClick: e => $('#modal_premium_infos').modal('show')
+    }, "Become a Premium member")), !exclusive && !url && /*#__PURE__*/React.createElement("button", {
+      className: "ui right labeled icon button primary huge fluid",
+      style: {
+        marginBottom: "10px",
+        backgroundColor: "#13dc74"
+      }
+    }, "Loading ", /*#__PURE__*/React.createElement("i", {
+      className: "loading icon"
+    }), " "), loaded && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("a", {
+      id: "final_redirect",
+      className: "ui right labeled icon primary green fluid button ",
+      style: {
+        marginBottom: "10px"
+      }
+    }, /*#__PURE__*/React.createElement("i", {
+      className: "right arrow icon"
+    }), /*#__PURE__*/React.createElement("span", {
+      id: "final_redirect_text"
+    }), " ", language.continue + " (", /*#__PURE__*/React.createElement("text", {
+      id: "pop_number"
+    }, "0"), "/" + (type === 'Normal' ? 1 : type === 'Full-Profits' ? 2 : 0) + ")"), /*#__PURE__*/React.createElement("button", {
+      className: "ui button primary fluid huge",
+      onClick: e => $('#modal_premium_infos').modal('show'),
+      style: {
+        backgroundColor: "#13dc74"
+      }
+    }, "Premium Access"))), /*#__PURE__*/React.createElement("a", {
+      style: {
+        marginTop: "10px !important"
+      },
+      href: "#comments_section"
+    }, "Leave a comment.."));
   }
 
 }
@@ -9694,125 +10129,105 @@ function ConnectionSymbol(props) {
 }
 
 function ModalSupport(props) {
-  return /*#__PURE__*/React.createElement("div", {
-    className: "ui basic modal",
-    id: "modal_premium_infos"
-  }, /*#__PURE__*/React.createElement("h2", {
-    className: "ui header"
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "certificate icon",
+  let {
+    u
+  } = props || [];
+  let {
+    username
+  } = getNestedObj(() => u.username) || 'Guest';
+  let warning_message = /*#__PURE__*/React.createElement("p", {
     style: {
-      WebkitMaskImage: "-webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(90, 50, 50, 0.8)), color-stop(0.5, rgba(119, 47, 26, 0.74)), to(rgba(123, 78, 32, 0.75)))",
-      color: '#4184f3'
+      color: "#c9c9c9"
     }
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "content"
-  }, ___reactjsD.website, /*#__PURE__*/React.createElement("div", {
-    className: "sub header",
-    style: {
-      color: '#c9c9c9'
-    }
-  }, "PREMIUM SERVICES"))), /*#__PURE__*/React.createElement("i", {
-    className: "close icon",
-    style: {
-      color: 'white'
-    },
-    onClick: () => {
-      $('#modal_premium_infos').modal('hide');
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "content"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ui segments"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ui secondary segment"
-  }, /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("i", {
-    className: "info circle icon"
-  }), language.new.modal_premium_subheader, /*#__PURE__*/React.createElement("small", {
-    className: "ui tiny label"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "https://adshrink.it/premium-guide/",
-    target: "_blank"
-  }, language.new.see_more)), " ", /*#__PURE__*/React.createElement("small", {
-    className: "ui tiny red label"
-  }, /*#__PURE__*/React.createElement("a", {
-    onClick: () => {
-      $('#modal_premium_infos').modal('hide');
-    },
-    target: "_blank"
-  }, "Close")))), /*#__PURE__*/React.createElement("div", {
-    className: "ui segment"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ui equal width grid centered stackable"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "column"
-  }, /*#__PURE__*/React.createElement("h3", {
-    className: "ui header"
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "ban big icon",
-    style: {
-      color: '#4184f3'
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "content"
-  }, 'Get Premium and Remove Ads', /*#__PURE__*/React.createElement("div", {
-    className: "sub header",
-    style: {
-      color: '#c9c9c9'
-    }
-  }, language.new.premium_2[0], /*#__PURE__*/React.createElement("b", null, language.new.premium_2[1]), language.new.premium_2[2])))), /*#__PURE__*/React.createElement("div", {
-    className: "column"
-  }, /*#__PURE__*/React.createElement("h3", {
-    className: "ui header"
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "chess king big icon",
-    style: {
-      color: '#4184f3'
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "content"
-  }, language.new.premium_3, /*#__PURE__*/React.createElement("div", {
-    className: "sub header",
-    style: {
-      color: '#c9c9c9'
-    }
-  }, language.new.premium_4[0], /*#__PURE__*/React.createElement("b", null, language.new.premium_4[1]))))), /*#__PURE__*/React.createElement("div", {
-    className: "column"
-  }, /*#__PURE__*/React.createElement("h3", {
-    className: "ui header"
-  }, /*#__PURE__*/React.createElement("i", {
-    className: "smile outline big icon",
-    style: {
-      color: '#4184f3'
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "content"
-  }, language.new.premium_5, /*#__PURE__*/React.createElement("div", {
-    className: "sub header",
-    style: {
-      color: '#c9c9c9'
-    }
-  }, language.new.premium_6[0], /*#__PURE__*/React.createElement("b", null, " ", language.new.premium_6[1])))))), /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("div", {
-    style: {
-      textAlign: "center"
-    }
-  }, /*#__PURE__*/React.createElement("a", {
-    id: "button_join_now_support",
-    href: "https://www.shrink-service.it/v2/public/auth",
-    target: "_blank",
-    className: "ui primary button"
-  }, language.new.join_now), /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("small", null, language.new.premium_info[0], /*#__PURE__*/React.createElement("b", null, /*#__PURE__*/React.createElement("small", null, language.new.premium_info[1])), language.new.premium_info[2], /*#__PURE__*/React.createElement("b", null, " ", language.new.premium_info[3], " "), language.new.premium_info[4]))), /*#__PURE__*/React.createElement("div", {
-    className: "ui secondary segment"
-  }, /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("a", {
-    style: {
-      color: "inherit"
-    },
-    href: "#comments_section"
-  }, language.new.premium_info[0], /*#__PURE__*/React.createElement("b", null, /*#__PURE__*/React.createElement("small", null, language.new.premium_info[1])), language.new.premium_info[2], /*#__PURE__*/React.createElement("b", null, " ", language.new.premium_info[3], " "), language.new.premium_info[4], " ", /*#__PURE__*/React.createElement("a", {
+  }, /*#__PURE__*/React.createElement("small", null, /*#__PURE__*/React.createElement("a", null, language.new.premium_info[0], /*#__PURE__*/React.createElement("b", null, /*#__PURE__*/React.createElement("small", null, language.new.premium_info[1])), language.new.premium_info[2], /*#__PURE__*/React.createElement("b", null, " ", language.new.premium_info[3], " "), language.new.premium_info[4], " ", /*#__PURE__*/React.createElement("a", {
     onClick: e => {
       gapi.auth2.getAuthInstance().signIn();
     }
-  }, "w/ Google Sign."), " "))))));
+  }, "w/ Google Sign."), " ")));
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ui basic small modal",
+    id: "modal_premium_infos"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "content"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ui segment basic right aligned"
+  }, /*#__PURE__*/React.createElement("i", {
+    onClick: () => {
+      $('#modal_premium_infos').modal('hide');
+    },
+    className: "close large middle aligned icon",
+    style: {
+      color: "#444"
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "content"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "ui header center aligned"
+  }, "Say thanks to ", username, /*#__PURE__*/React.createElement("p", {
+    className: "sub header",
+    style: {
+      marginTop: "25px"
+    }
+  }, "Our creators love hearing from you and seeing how you are supporting them. You will even be able to automatically skip all AdShrink Ads.")), /*#__PURE__*/React.createElement("div", {
+    className: "ui segment basic center aligned"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ui secondary labeled icon button large center aligned",
+    onClick: () => {
+      ga('send', 'event', 'Premium', 'prototype', 'user-click-stripe-button', 1);
+      window.open(_adshrink.premiumpage + username, '_blank');
+    }
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "stripe icon"
+  }), " Support"), /*#__PURE__*/React.createElement("div", {
+    className: "ui secondary labeled icon button large center aligned",
+    onClick: () => {
+      ga('send', 'event', 'Premium', 'prototype', 'user-click-paypal-button', 1);
+      window.open(_adshrink.premiumpage + username, '_blank');
+    }
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "paypal icon"
+  }), " Support"))), /*#__PURE__*/React.createElement("div", {
+    className: "ui divider"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "content"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "ui sub header left aligned",
+    style: {
+      color: "#c9c9c9"
+    }
+  }, "Latest popular links of " + username), /*#__PURE__*/React.createElement("div", {
+    className: "ui segment secondary basic"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "ui header",
+    style: {
+      color: "#444"
+    }
+  }, props.html_lastlinks)), /*#__PURE__*/React.createElement("div", {
+    className: "ui message tiny"
+  }, /*#__PURE__*/React.createElement("i", {
+    className: "exclamation circle icon"
+  }), " PayPal subscriptions usually take longer to activate ", /*#__PURE__*/React.createElement("span", {
+    class: "ui label tiny blue"
+  }, "5'"))));
+}
+
+function StickyBottomBar(props) {
+  let device_format_tablet_computer = props.dev === 'Desktop' || props.dev === 'Tablet' ? true : false;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "ui bottom fixed stackable menu"
+  }, /*#__PURE__*/React.createElement("a", {
+    className: "item"
+  }, !props.basic && /*#__PURE__*/React.createElement("div", {
+    className: "g-signin2",
+    id: "g-signin2",
+    "data-onsuccess": googleUser => this.onAuthGoogle(googleUser)
+  }), props.basic && /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("a", null, /*#__PURE__*/React.createElement("i", {
+    className: "google icon middle aligned"
+  }), " ", getNestedObj(() => props.basic.firstname)))), device_format_tablet_computer && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("a", {
+    className: "item"
+  }, /*#__PURE__*/React.createElement("small", {
+    className: "ui message mini"
+  }, language.new.premium_info[0], /*#__PURE__*/React.createElement("b", null, /*#__PURE__*/React.createElement("small", null, language.new.premium_info[1])), language.new.premium_info[2], /*#__PURE__*/React.createElement("b", null, " ", language.new.premium_info[3], " "), " ", /*#__PURE__*/React.createElement("br", null), " ", language.new.premium_info[4] + " w/ Google Sign"))));
 }
 
 class Prototype extends React.Component {
@@ -9908,6 +10323,16 @@ class Prototype extends React.Component {
       }
     });
 
+    _defineProperty(this, "on_script_load_first_page", () => {
+      try {
+        $('#premium_video_mob').embed();
+      } catch (error) {
+        console.warn('Adshrink:error', error);
+      }
+    });
+
+    _defineProperty(this, "on_script_load_second_page", () => {});
+
     _defineProperty(this, "component_redered", () => {
       let that = this;
       gapi.signin2.render('g-signin2', {
@@ -9932,25 +10357,6 @@ class Prototype extends React.Component {
       });
 
       try {
-        var stickydiv = $('#stickyad');
-        var stickyPosition = stickydiv.position();
-        $(window).scroll(function () {
-          console.log('init-sticky-ads');
-          var scrollBarPosition = $(window).scrollTop();
-
-          if (scrollBarPosition >= stickyPosition.top) {
-            stickydiv.css({
-              'position': 'sticky',
-              'top': 5
-            });
-          } else {
-            stickydiv.css({
-              'position': 'relative',
-              'top': 0
-            });
-          }
-        });
-
         if (!window.init_sharer || isEmpty($('#modal_share_content'))) {
           let data = [{
             sharer: 'facebook'
@@ -10044,15 +10450,26 @@ class Prototype extends React.Component {
         });
       } catch (error) {
         console.warn('sticky-ads-error-scroll');
-      }
+      } //$('#wikipedia').accordion({ selector: {trigger: '.title'} });
 
-      $('#wikipedia').accordion({
-        selector: {
-          trigger: '.title'
-        }
-      });
+
       $('#smartphone_menu_dropdown').dropdown();
       $('.basic-inverted-popup').popup();
+    });
+
+    _defineProperty(this, "fetchPageData", (id, userid, c) => {
+      let that = this || [];
+      /* news, lastlinks, premium, tweets */
+
+      $.post('https://www.shrink-service.it/v2/public/api/prototype/public/' + userid + '/' + id, {
+        c: c,
+        referrer: getNestedObj(() => window.document.referrer),
+        host: window.dhost
+      }).then(res => {
+        if (getNestedObj(() => res.success)) that.setState({
+          publicdata: res
+        });
+      });
     });
 
     _defineProperty(this, "fetchUserData", (id, userid) => {
@@ -10068,9 +10485,85 @@ class Prototype extends React.Component {
         this.setState({
           user
         });
-        $('#support-button-user')[0].href = "https://www.shrink-service.it/v2/public/auth?username=" + getNestedObj(() => user.username);
-        $('#button_join_now_support')[0].href = "https://www.shrink-service.it/v2/public/auth?username=" + getNestedObj(() => user.username);
       }).catch(error => {//this.setState({user: {username: 'AdShrink Private User', permission: 'Private'} });
+      });
+    });
+
+    _defineProperty(this, "on_publicdata_firstpage", () => {
+      let {
+        html,
+        updatedhtml,
+        vpninfo,
+        user
+      } = this.state || [];
+      let data = getNestedObj(() => this.state.initShrinkData) || [];
+      let form_factor = getNestedObj(() => this.state.wurfl.form_factor) || false;
+      let get_shrink_id = getNestedObj(() => data.id);
+      let get_user_id = getNestedObj(() => data.userid);
+      let get_user_name = getNestedObj(() => user.username);
+      html.firstpage.lastlinks = /*#__PURE__*/React.createElement(LastLinks, {
+        lastlinks: getNestedObj(() => this.state.publicdata.lastlinks)
+      });
+      html.secondpage.news = /*#__PURE__*/React.createElement(LastNews, {
+        vpn: vpninfo,
+        dev: form_factor,
+        news: getNestedObj(() => this.state.publicdata.news)
+      });
+      html.firstpage.content = getNestedObj(() => this.state.publicdata.content);
+      updatedhtml = updatedhtml + 1;
+      this.setState({
+        html: html,
+        updatedhtml: updatedhtml
+      });
+    });
+
+    _defineProperty(this, "on_publicdata_secondpage", () => {
+      let {
+        html,
+        updatedhtml,
+        vpninfo,
+        user
+      } = this.state || [];
+      let data = getNestedObj(() => this.state.initShrinkData) || [];
+      let form_factor = getNestedObj(() => this.state.wurfl.form_factor) || false;
+      let get_shrink_id = getNestedObj(() => data.id);
+      let get_user_id = getNestedObj(() => data.userid);
+      let get_user_name = getNestedObj(() => user.username);
+      html.secondpage.premium = /*#__PURE__*/React.createElement(Subscribers, {
+        u: {
+          id: get_shrink_id,
+          userid: get_user_id,
+          username: get_user_name
+        },
+        premium: getNestedObj(() => this.state.publicdata.premium)
+      });
+      updatedhtml = updatedhtml + 1;
+      this.setState({
+        html: html,
+        updatedhtml: updatedhtml
+      });
+    });
+
+    _defineProperty(this, "on_continue_from_modal", (e, type = false) => {
+      e.preventDefault();
+      let {
+        user
+      } = this.state || [];
+      let get_user_name = getNestedObj(() => user.username);
+
+      if (type && type === 'premium') {
+        window.location.href = _adshrink.premiumpage + get_user_name;
+        return true;
+      }
+
+      this.setState({
+        clicked_continue: true
+      });
+    });
+
+    _defineProperty(this, "on_recaptcha_passed", value => {
+      this.setState({
+        recaptcha: value
       });
     });
 
@@ -10102,7 +10595,25 @@ class Prototype extends React.Component {
       wurfl: [],
       componentLoaded: false,
       url: false,
-      user: false
+      user: false,
+      clicked_continue: false,
+      publicdata: {
+        news: false,
+        premium: false,
+        tweets: false,
+        lastlinks: false
+      },
+      html: {
+        firstpage: {
+          lastlinks: false,
+          content: false
+        },
+        secondpage: {
+          news: false,
+          premium: false
+        }
+      },
+      updatedhtml: 0
     };
     this.onScriptLoad = this.onScriptLoad.bind(this);
     this.onHandleScript = this.onHandleScript.bind(this);
@@ -10112,7 +10623,6 @@ class Prototype extends React.Component {
     this.onHandleFull = this.onHandleFull.bind(this);
     this.onAuthGoogle = this.onAuthGoogle.bind(this);
     this.shouldScriptDidUpdate = this.shouldScriptDidUpdate.bind(this);
-    this.onRequestHeatmap = this.onRequestHeatmap.bind(this);
     this.onDataAvailable = this.onDataAvailable.bind(this);
     this.externalChangeShrinkType = this.externalChangeShrinkType.bind(this);
     this.navigatorComponentScripts = this.navigatorComponentScripts.bind(this);
@@ -10527,6 +11037,12 @@ class Prototype extends React.Component {
             componentLoaded: true
           });
         });
+<<<<<<< Updated upstream
+=======
+        check_user_iab_permissions();
+        that.on_script_load_first_page();
+        that.on_script_load_second_page();
+>>>>>>> Stashed changes
       } else {
         try {
           clearInterval(loaded_interval);
@@ -10563,12 +11079,14 @@ class Prototype extends React.Component {
     let type = getNestedObj(() => data[0].type) || 'Normal';
     let userid = parseInt(getNestedObj(() => data[0].userid)) || 2;
     let shrinkid = parseInt(getNestedObj(() => data[0].id)) || 2;
+    let oncontinuefirstpage = false;
     this.fetchUserData(shrinkid, userid); //console.log('__SYSTEM__', userid, ___freeadsusers, ___freeadsusers.indexOf(userid), _adshrink);
 
     if (___freeadsusers.indexOf(userid) >= 0) {
       _adshrink.skiptime = 60;
       _adshrink.enabled.iframe = false;
       _adshrink.enabled.skip = false;
+      oncontinuefirstpage = true;
     } //console.log('__SYSTEM__END__', userid, ___freeadsusers, ___freeadsusers.indexOf(userid), _adshrink);
 
 
@@ -10583,6 +11101,7 @@ class Prototype extends React.Component {
     window[___reactjsD.o].exemicrotiming = getNestedObj(() => data.exe_microtime_function);
     window[___reactjsD.o].exemicrotimingq = getNestedObj(() => data.exe_microtime_query);
     window[___reactjsD.o].tempshc = getNestedObj(() => data.sys_host_cookie);
+    window.dhost = getNestedObj(() => window[___reactjsD.o].host);
 
     try {
       let _shc = parseInt(window[___reactjsD.o].tempshc);
@@ -10620,7 +11139,8 @@ class Prototype extends React.Component {
       },
       type: type,
       init: true,
-      connection: connection
+      connection: connection,
+      clicked_continue: oncontinuefirstpage
     });
   }
 
@@ -10659,6 +11179,9 @@ class Prototype extends React.Component {
       this.setState({
         vpninfo
       });
+      let shrink_id = getNestedObj(() => that.props.data[0].id);
+      let user_id = getNestedObj(() => that.props.data[0].userid);
+      this.fetchPageData(shrink_id, user_id, country);
     }).catch(error => {
       console.warn('vpninfo', error);
     });
@@ -10714,7 +11237,7 @@ class Prototype extends React.Component {
       return true;
     }
 
-    if (nextState.type !== this.state.type || nextState.url !== this.state.url) {
+    if (nextState.type !== this.state.type || nextState.url !== this.state.url || nextState.recaptcha !== this.state.recaptcha) {
       return true;
     }
 
@@ -10723,6 +11246,14 @@ class Prototype extends React.Component {
     }
 
     if (nextState.user !== this.state.user || nextState.oAuth !== this.state.oAuth) {
+      return true;
+    }
+
+    if (nextState.clicked_continue !== this.state.clicked_continue || nextState.publicdata !== this.state.publicdata) {
+      return true;
+    }
+
+    if (nextState.html !== this.state.html || nextState.updatedhtml !== this.state.updatedhtml) {
       return true;
     }
 
@@ -10751,10 +11282,34 @@ class Prototype extends React.Component {
 
     if (getNestedObj(() => this.state.oAuth.signed) && this.state.initShrinkData) {
       this.on_premium();
-    }
+    } //script-caricati
+
+    /*
+    *
+    * Azioni prima pagina.
+    */
+
 
     if (nextState.loaded !== this.state.loaded) {
       this.component_redered();
+    }
+
+    if (nextState.publicdata !== this.state.publicdata) {
+      this.on_publicdata_firstpage();
+    }
+
+    if (nextState.html !== this.state.html || nextState.updatedhtml !== this.state.updatedhtml) {
+      window.lazyLoadInstance.update();
+    } //script-caricati e click su continua dopo la prima pagina
+
+    /*
+    *
+    * Azioni seconda pagina.
+    */
+
+
+    if (nextState.clicked_continue !== this.state.clicked_continue) {
+      this.on_publicdata_secondpage();
     }
   }
 
@@ -10762,6 +11317,10 @@ class Prototype extends React.Component {
 
   render() {
     let that = this;
+    let {
+      clicked_continue,
+      publicdata
+    } = this.state;
     let type = getNestedObj(() => this.state.type) || 'Normal';
     let data = getNestedObj(() => this.state.initShrinkData) || [];
     let form_factor = getNestedObj(() => this.state.wurfl.form_factor) || false;
@@ -10779,6 +11338,7 @@ class Prototype extends React.Component {
       //$('title').text("Shorten urls and earn money - AdShrink.it");
 
 
+<<<<<<< Updated upstream
       changeFavicon('https://www.shrink-service.it/ico/favicons.png');
       if (!that.state.script.donate) that.onScriptLoad('donate', 'https://blockchain.info/Resources/js/pay-now-button.js'); //RedirectCom()
 
@@ -10789,8 +11349,12 @@ class Prototype extends React.Component {
         $('#video_tutorial_normal').embed();
         that.system_popup_bounduary_steps = true;
       }
+=======
+      changeFavicon('https://www.shrink-service.it/ico/favicons.png'); //RedirectCom();
+>>>>>>> Stashed changes
     });
     const today = new Date();
+    let recaptcha = getNestedObj(() => this.state.recaptcha) || false;
 
     let _script_loaded = getNestedObj(() => this.state.loaded) || false;
 
@@ -10798,12 +11362,23 @@ class Prototype extends React.Component {
     let get_shrink_id = getNestedObj(() => data.id);
     let get_user_id = getNestedObj(() => data.userid);
     let get_user_name = getNestedObj(() => data.username);
-    let desktop_tablet = form_factor === 'Desktop' || form_factor === 'Tablet' ? true : false; //let hm = <ComponentChartViewsLink data={data} />;
+    let desktop_tablet = form_factor === 'Desktop' || form_factor === 'Tablet' ? true : false;
+    /*
+    * old-style
+    * @media only screen and (min-width: 700px) { .custom-padding-seg { padding: 15px 27px 15px 40px !important; } } \ 
+    *
+    * must-js
+    * __tcfapi('displayConsentUi',2, function() {}); QUANTCAST
+    * let hm = <ComponentChartViewsLink data={data} />;
+    * 
+    */
 
     return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("style", null, " \
+                    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@200;300;600;800&display=swap'); \
+                    .ui { font-family: 'Nunito', sans-serif !important; } \
                     html { width: 100%; margin: 0px; padding: 0px; overflow-x: hidden;  } \
                     body { background-color: #fff; width: 100%;margin: 0px; padding: 0px; overflow-x: hidden; } \
-                    #app_second_panel { background-color: #fff; } \
+                    #app_second_panel { background-color: #fff; padding: 0px 15px 0px !important; } \
                     #center_jumbotron { background: linear-gradient(-45deg, #525cee, #e73c7e, #1196e6, #23d5ab); background-size: 400% 400%; animation: gradient 15s ease infinite; } \
                     @keyframes gradient { 0% {background-position: 0% 50%;} 50% {background-position: 100% 50%;} 100% {background-position: 0% 50%;} } \
                     .pulsebutton { position: relative; border: none; background: linear-gradient(#1ffc7e, #24c755) !important; border-color: #15b370 !important; box-shadow: 0 0 0 0 rgba(19, 220, 116, 0.7); background-color: #13dc74; background-size: cover; background-repeat: no-repeat; cursor: pointer; -webkit-animation: pulse 1.25s infinite cubic-bezier(0.66, 0, 0, 1); -moz-animation: pulse 1.25s infinite cubic-bezier(0.66, 0, 0, 1); -ms-animation: pulse 1.25s infinite cubic-bezier(0.66, 0, 0, 1); animation: pulse 1.25s infinite cubic-bezier(0.66, 0, 0, 1); } \
@@ -10846,11 +11421,20 @@ class Prototype extends React.Component {
                     .ui.breadcrumb a { color: #4184f3; } \
                     @media only screen and (max-width: 700px) { .ui.main.menu { display: none !important; } .main.menu .item, .main.menu .menu { display: none; } .secondary.menu { display: block!important; } }\
                     .ui.labeled.icon.menu .item { min-width: 5em; } \
-                    @media only screen and (min-width: 700px) { .custom-padding-seg { padding: 15px 27px 15px 40px !important; } } \
-                    .ui.card.horizontal { -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; min-width: 400px; width: 500; } .ui.card.horizontal>.image { border-radius: 0; width: 200px; height: 200px; } .ui.card.horizontal>.image>img { background-size: cover; background-repeat: no-repeat; background-position: center; justify-content: center; align-items: center; display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; width: 100%; height: 100%; border-radius: 0; } \
+                    @media only screen and (min-width: 700px) { .custom-padding-seg { padding: 15px 27px 15px 40px !important; } .zero-custom-padding-seg { padding: 0px !important; } } \
+                    .ui.card.horizontal { -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; min-width: 525px; width: 600px; } .ui.card.horizontal>.image { border-radius: 0; width: 200px; height: 200px; } .ui.card.horizontal>.image>img { background-size: cover; background-repeat: no-repeat; background-position: center; justify-content: center; align-items: center; display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; width: 100%; height: 100%; border-radius: 0; } \
                     .glide__slide { height: initial !important; } \
+                    #modal_premium_infos { background: white !important; } \
+                    .newsheader { font-size: 15px !important; font-family: 'Nunito', sans-serif !important; } .newsheader .description { font-family: 'Nunito', sans-serif !important; } \
+                    .g-signin2 { margin-left: 50px; top: 3px; position: relative; } \
                 "), /*#__PURE__*/React.createElement(ModalSupport, {
-      basic: basic
+      basic: basic,
+      u: {
+        id: get_shrink_id,
+        userid: get_user_id,
+        username: user
+      },
+      html_lastlinks: getNestedObj(() => this.state.html.firstpage.lastlinks)
     }), _script_loaded && /*#__PURE__*/React.createElement(React.Fragment, null, true == false && /*#__PURE__*/React.createElement(ComponentAdShrinkSurvey, null), /*#__PURE__*/React.createElement(ModalSharer, null), /*#__PURE__*/React.createElement(ModalAward, {
       basic: basic,
       dev: form_factor,
@@ -10858,45 +11442,51 @@ class Prototype extends React.Component {
         id: get_shrink_id,
         userid: get_user_id
       }
-    }), /*#__PURE__*/React.createElement(ModalTCF, null), /*#__PURE__*/React.createElement(ComponentLoadingDimmer, null), !isEmpty(data) && type !== 'Light' && _adshrink.enabled.iframe && /*#__PURE__*/React.createElement(ComponentRotationAdv, null), isEmpty(data) && /*#__PURE__*/React.createElement(ComponentLoadingDimmer, {
-      show: isEmpty(data)
-    }), /*#__PURE__*/React.createElement("div", {
+    }), /*#__PURE__*/React.createElement(ModalTCF, null), !isEmpty(data) && /*#__PURE__*/React.createElement(ComponentExtraScripts, {
+      importNavigatorScript: this.navigatorComponentScripts
+    }), !isEmpty(data) && type !== 'Light' && _adshrink.enabled.iframe && true === true && recaptcha && /*#__PURE__*/React.createElement(ComponentRotationAdv, null), /*#__PURE__*/React.createElement("div", {
       className: "ui grid stackable " + (isEmpty(data) ? 'blurred' : ''),
       id: "app_second_panel"
     }, /*#__PURE__*/React.createElement("div", {
       className: "sixteen wide column",
       id: "first_div_full"
     }, /*#__PURE__*/React.createElement(SemanticNav, {
+      method_change_shrink_type: this.externalChangeShrinkType,
       dev: form_factor,
       u: {
         id: get_shrink_id,
         userid: get_user_id
-      },
-      method_change_shrink_type: this.externalChangeShrinkType
-    })), /*#__PURE__*/React.createElement("div", {
-      className: "sixteen wide column",
-      id: "second_div_full",
-      style: {
-        paddingBottom: "0px"
       }
-    }), form_factor !== 'Smartphone' && _adshrink.adsense === 'full' || (type === 'Full-Profits' || type === 'Super-Full-Profits') && true == false && /*#__PURE__*/React.createElement("div", {
-      className: "sixteen wide column center aligned hide mobile"
-    }, /*#__PURE__*/React.createElement(AdsenseBanner, {
-      size: 'leaderboard'
-    })), form_factor === 'Smartphone' && true == false && /*#__PURE__*/React.createElement("div", {
-      className: "five wide column mobile only "
-    }, /*#__PURE__*/React.createElement(AdsenseBanner, {
-      size: 'medium_rectangle'
-    })), form_factor === 'Desktop' && true == false && /*#__PURE__*/React.createElement("div", {
-      className: "five wide column computer only"
-    }, /*#__PURE__*/React.createElement(ComponentPromotedContent, {
-      position: 'top'
-    }), /*#__PURE__*/React.createElement(AdsenseBanner, {
+    })), recaptcha && /*#__PURE__*/React.createElement("div", {
+      className: "four wide computer eight wide tablet sixteen wide mobile column center algined",
+      style: {
+        background: "#f8f9fa",
+        padding: "27px 20px 7px 7px"
+      }
+    }, desktop_tablet && true === false && /*#__PURE__*/React.createElement(ComponentStaticStepsMessages, null), desktop_tablet && /*#__PURE__*/React.createElement(AdsenseBanner, {
+      size: 'half_page_responsive'
+    }), !desktop_tablet && /*#__PURE__*/React.createElement(AdsenseBanner, {
       size: 'half_page'
-    })), /*#__PURE__*/React.createElement("div", {
+    }), desktop_tablet && getNestedObj(() => this.state.html.secondpage.premium)), !isEmpty(data) && !clicked_continue && recaptcha && _adshrink.enabled.firstpage && /*#__PURE__*/React.createElement(ComponentFirstPage, {
+      on_continue: this.on_continue_from_modal,
+      data: data,
+      u: {
+        id: get_shrink_id,
+        userid: get_user_id,
+        username: user
+      },
+      vpn: vpninfo,
+      dev: form_factor,
+      type: type,
+      basic: basic,
+      connection: connection,
+      publicdata: {
+        tweets: getNestedObj(() => publicdata.tweets)
+      },
+      html_lastlinks: getNestedObj(() => this.state.html.firstpage.lastlinks)
+    }), !recaptcha && /*#__PURE__*/React.createElement(ComponentRecaptcha, null), clicked_continue && recaptcha && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
       className: "twelve wide computer eight wide tablet sixteen wide mobile column",
       style: form_factor === 'Smartphone' ? {} : {
-        borderRight: "0.5px solid #a8a8a8",
         padding: "0px"
       }
     }, /*#__PURE__*/React.createElement("div", {
@@ -10910,11 +11500,17 @@ class Prototype extends React.Component {
       size: 'leaderboard'
     }), form_factor === 'Tablet' && /*#__PURE__*/React.createElement(AdsenseBanner, {
       size: 'leaderboard'
+<<<<<<< Updated upstream
     }), form_factor === 'Smartphone' && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(AdsenseBanner, {
       size: 'medium_rectangle'
     }), /*#__PURE__*/React.createElement(AdsenseBanner, {
       size: 'medium_rectangle'
     }))), form_factor === 'Smartphone' && /*#__PURE__*/React.createElement(ComponentStaticStepsMessages, null), /*#__PURE__*/React.createElement(SemanticNavContent, {
+=======
+    }), form_factor === 'Smartphone' && true === false && /*#__PURE__*/React.createElement(AdsenseBanner, {
+      size: 'half_page'
+    })), form_factor === 'Smartphone' && /*#__PURE__*/React.createElement(ComponentStaticStepsMessages, null), /*#__PURE__*/React.createElement(SemanticNavContent, {
+>>>>>>> Stashed changes
       dev: form_factor,
       data: data,
       type: type,
@@ -10931,33 +11527,29 @@ class Prototype extends React.Component {
       data: data,
       type: type,
       basic: basic,
-      user: user
-    }), /*#__PURE__*/React.createElement(LastNews, {
-      vpn: vpninfo,
-      dev: form_factor
-    }), /*#__PURE__*/React.createElement(ComponentInfos, null), !isEmpty(data) && /*#__PURE__*/React.createElement(ComponentExtraScripts, {
-      importNavigatorScript: this.navigatorComponentScripts
-    })), /*#__PURE__*/React.createElement("div", {
+      user: user,
+      html_lastlinks: getNestedObj(() => this.state.html.firstpage.lastlinks)
+    }), form_factor === 'Smartphone' && getNestedObj(() => this.state.html.secondpage.premium), /*#__PURE__*/React.createElement(ComponentInfos, null)), !desktop_tablet && true === false && /*#__PURE__*/React.createElement("div", {
       className: "four wide computer eight wide tablet sixteen wide mobile column",
       style: {
         background: "#f8f9fa",
-        padding: "7px 20px 7px 7px"
+        padding: "27px 20px 7px 7px"
       }
     }, true === false && /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("a", {
       onClick: e => this.onDataAvailable()
-    }, "Check")), desktop_tablet && /*#__PURE__*/React.createElement(ComponentStaticStepsMessages, null), /*#__PURE__*/React.createElement(AdsenseBanner, {
-      size: 'half_page'
-    }), /*#__PURE__*/React.createElement(Subscribers, {
-      u: {
-        id: get_shrink_id,
-        userid: get_user_id,
-        username: get_user_name
-      }
-    }))), /*#__PURE__*/React.createElement("div", {
+    }, "Check")), desktop_tablet && true === false && /*#__PURE__*/React.createElement(ComponentStaticStepsMessages, null), /*#__PURE__*/React.createElement(AdsenseBanner, {
+      size: 'half_page_responsive'
+    }), getNestedObj(() => this.state.html.secondpage.premium)))), recaptcha && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
       className: "ui divider"
     }), " ", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("div", {
       className: "ui grid centered stackable container" + (isEmpty(data) ? 'blurred' : '')
     }, /*#__PURE__*/React.createElement("div", {
+      className: "sixteen wide column"
+    }, getNestedObj(() => this.state.html.secondpage.news)), /*#__PURE__*/React.createElement("div", {
+      className: "sixteen wide column"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "ui divider"
+    })), /*#__PURE__*/React.createElement("div", {
       className: "sixteen wide column"
     }, /*#__PURE__*/React.createElement(ComponentFirstInfoSegment, null)), /*#__PURE__*/React.createElement("div", {
       className: "sixteen wide column"
@@ -10988,7 +11580,57 @@ class Prototype extends React.Component {
       }
     }, /*#__PURE__*/React.createElement(WpCards, {
       dev: form_factor
-    })))), !_script_loaded && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    })), getNestedObj(() => this.state.html.firstpage.content) && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+      className: "sixteen wide column"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "ui divider"
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "sixteen wide column"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "ui header"
+    }, /*#__PURE__*/React.createElement("i", {
+      className: "thumbtack icon"
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "content"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "sub header"
+    }, "ABOUT"), "Related Content", /*#__PURE__*/React.createElement("div", {
+      className: "sub header"
+    }, "Powered by Machine learning"))), /*#__PURE__*/React.createElement("div", {
+      dangerouslySetInnerHTML: {
+        __html: getNestedObj(() => this.state.html.firstpage.content)
+      }
+    }))))), !recaptcha && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+      class: "ui grid stackable middle aligned lazy",
+      "data-bg-multi": "linear-gradient(to left ,rgb(248 249 250) 40%, rgb(248 249 250 / 0%)), url(https://www.cloudflare.com/static/8af213f87d9b6a646150b6533e9db000/orig.svg)",
+      style: {
+        padding: "120px 0px",
+        backgroundColor: "#000000d6 !important",
+        width: "100% !important",
+        backgroundSize: "contain",
+        backgroundRepeat: "no-repeat",
+        margin: "5%",
+        backgroundPosition: "calc(50% + 50px) 50%"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "eight wide column left aligned"
+    }, /*#__PURE__*/React.createElement("h2", {
+      className: "ui header"
+    }, "Before continuing..", /*#__PURE__*/React.createElement("div", {
+      className: "sub header"
+    }, "This page checks if the requests ", /*#__PURE__*/React.createElement("br", null), " are really sent by you and not by a robot. ", /*#__PURE__*/React.createElement("a", {
+      href: "https://www.cpomagazine.com/cyber-security/the-hidden-dangers-of-malicious-bots/",
+      target: "_blank"
+    }, "Why?"))), /*#__PURE__*/React.createElement(ComponentVerifyBot, {
+      pass: this.on_recaptcha_passed
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "eight wide column"
+    }, /*#__PURE__*/React.createElement(SemanticCard, {
+      user: getNestedObj(() => this.state.user.username, false)
+    })))), /*#__PURE__*/React.createElement(StickyBottomBar, {
+      dev: form_factor,
+      basic: basic
+    })), !_script_loaded && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
       className: "ui grid container stackable middle aligned center aligned"
     }, /*#__PURE__*/React.createElement("div", {
       className: "row middle aligned center aligned",
@@ -11011,9 +11653,7 @@ class Prototype extends React.Component {
       onClick: e => {
         $('#modal_premium_infos').modal('show');
       }
-    }, "Premium")))))), /*#__PURE__*/React.createElement("div", {
-      id: "stickyad"
-    }), /*#__PURE__*/React.createElement(Footer, null));
+    }, "Premium")))))), /*#__PURE__*/React.createElement(Footer, null));
   }
 
 }
