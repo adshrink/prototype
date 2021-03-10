@@ -1163,8 +1163,6 @@ const detectLangStorage = !isEmpty(window.localStorage.getItem('language')) ? wi
 
 var language = ___reactjsD.language['en'];
 document.head || (document.head = document.getElementsByTagName('head')[0]);
-<<<<<<< Updated upstream
-=======
 window.iab_rejected = true; //OneTrust.getVendorConsentsRequestV2((e) => { console.log(e) })
 
 async function check_user_iab_permissions(get = false) {
@@ -1206,6 +1204,9 @@ async function check_user_iab_permissions(get = false) {
               console.warn('user-allow-cmp-tcf-2.0', 'google', hasGoogleAdvertisingProductsConsent, 'ppc', hasGoogleAdvertisingProductsConsent, 'pac', hasPersonalizedAdsConsent);
               ga('send', 'event', 'TCF-2.0', 'prototype', 'user-allow-cmp-tcf-2.0-google', 100);
               window.iab_rejected = false;
+              if (!get && !isEmpty($('#pre-captcha-iab-message-rejected'))) $('#pre-captcha-iab-message-rejected').css({
+                display: 'none'
+              });
             } else {
               // Set request non-personalized ads to true.
               (adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds = 1;
@@ -1230,13 +1231,13 @@ async function check_user_iab_permissions(get = false) {
     }
   });
 }
->>>>>>> Stashed changes
 /**
  * Deep diff between two object, using lodash
  * @param  {Object} object Object compared
  * @param  {Object} base   Object to compare with
  * @return {Object}        Return a new object who represent the diff
  */
+
 
 function difference(object, base) {
   function changes(object, base) {
@@ -6865,6 +6866,13 @@ class ComponentVerifyBot extends React.Component {
       });
     });
 
+    _defineProperty(this, "on_allow_iab", () => {
+      if ("OneTrust" in window) OneTrust.AllowAll();
+      if (!isEmpty($('#pre-captcha-iab-message-rejected'))) $('#pre-captcha-iab-message-rejected').css({
+        display: 'none'
+      });
+    });
+
     this.state = {
       fetching: false,
       recaptcha: false,
@@ -6916,11 +6924,10 @@ class ComponentVerifyBot extends React.Component {
     }, adblock && /*#__PURE__*/React.createElement("div", {
       class: "item"
     }, this.message.adblock), rejectediab && /*#__PURE__*/React.createElement("div", {
-      class: "item"
+      class: "item",
+      id: "pre-captcha-iab-message-rejected"
     }, this.message.iab, ". ", /*#__PURE__*/React.createElement("br", null), " ", /*#__PURE__*/React.createElement("a", {
-      onClick: () => {
-        OneTrust.AllowAll();
-      }
+      onClick: () => this.on_allow_iab()
     }, this.message.allow))), !recaptcha && /*#__PURE__*/React.createElement("div", {
       className: this.divname
     }), recaptcha && /*#__PURE__*/React.createElement("div", {
@@ -9241,10 +9248,7 @@ class SemanticNavContent extends React.Component {
 
     _defineProperty(this, "select_mode", async selected => {
       let adblock = await checkAdBlocker();
-<<<<<<< Updated upstream
-=======
       let iab = await check_user_iab_permissions(true);
->>>>>>> Stashed changes
       let tcf = window.iab_rejected;
 
       if (adblock) {
@@ -9318,13 +9322,8 @@ class SemanticNavContent extends React.Component {
       }), language.new.support));
     });
 
-<<<<<<< Updated upstream
-    _defineProperty(this, "on_iab_rej", () => {
-      console.warn('on_iab_rej', window.iab_rejected);
-=======
     _defineProperty(this, "on_iab_rej", async () => {
       let iab = await check_user_iab_permissions(true);
->>>>>>> Stashed changes
 
       if (window.iab_rejected) {
         OneTrust.AllowAll();
@@ -9707,7 +9706,7 @@ class SemanticNavContent extends React.Component {
       className: "share icon"
     }), " ", language.new.share, " "))), /*#__PURE__*/React.createElement("div", {
       className: "five wide column middle aligned center aligned"
-    }, window.iab_rejected && type && !adblock && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    }, window.iab_rejected && type && !adblock && type !== 'Exclusive' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
       className: "ui red floating message"
     }, /*#__PURE__*/React.createElement("p", null, " ", /*#__PURE__*/React.createElement("i", {
       className: "adversal icon"
@@ -9740,14 +9739,6 @@ class SemanticNavContent extends React.Component {
     }), !isEmpty(data) && type !== 'Exclusive' && mode && /*#__PURE__*/React.createElement(ComponentGetDestination, {
       type: type,
       skip: skip,
-<<<<<<< Updated upstream
-      url: url
-    }), adblock && type !== 'Exclusive' && !window.iab_rejected && /*#__PURE__*/React.createElement("div", {
-      className: "ui red floating message"
-    }, /*#__PURE__*/React.createElement("p", null, " ", /*#__PURE__*/React.createElement("i", {
-      className: "minus circle icon"
-    }), " Please disable your ad blocker and reload!")), type === 'Exclusive' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-=======
       url: url,
       mode: mode
     }), !window.iab_rejected && adblock && type !== 'Exclusive' && true === false && /*#__PURE__*/React.createElement("div", {
@@ -9755,7 +9746,6 @@ class SemanticNavContent extends React.Component {
     }, /*#__PURE__*/React.createElement("p", null, " ", /*#__PURE__*/React.createElement("i", {
       className: "minus circle icon"
     }), " Please disable your ad blocker and reload!")), !window.iab_rejected && type === 'Exclusive' && true === false && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
->>>>>>> Stashed changes
       className: "ui red floating message"
     }, /*#__PURE__*/React.createElement("p", null, " ", /*#__PURE__*/React.createElement("i", {
       className: "minus circle icon"
@@ -10389,65 +10379,6 @@ class Prototype extends React.Component {
           });
           window.Sharer.init();
         }
-
-        window.iab_rejected = true;
-        $(document).ready(() => {
-          if (!window.__tcfapi) return false;
-
-          window.__tcfapi('addEventListener', 2, function (tcData, listenerSuccess) {
-            console.info('IAB', tcData, listenerSuccess);
-            if (!listenerSuccess) return false;
-
-            if (tcData.eventStatus === 'tcloaded' || tcData.eventStatus === 'useractioncomplete') {
-              if (!tcData.gdprApplies) {
-                // GDPR DOES NOT APPLY, UnpauseAdRequests
-                // Set request non-personalized ads to false as GDPR does not apply.
-                (adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds = 0; // Unpause ads, as GDPR does not apply.
-
-                (adsbygoogle = window.adsbygoogle || []).pauseAdRequests = 0;
-                ga('send', 'event', 'TCF-2.0', 'prototype', '!gdpr', 100);
-                window.iab_rejected = false;
-              } else {
-                // GDPR DOES APPLY
-                // Purpose 1 refers to the storage and/or access of information on a device.
-                let hasDeviceStorageAndAccessConsent = getNestedObj(() => tcData.purpose.consents[1]); // Google Requires Consent for Purpose 1
-
-                if (hasDeviceStorageAndAccessConsent) {
-                  // GLOBAL VENDOR LIST - https://iabeurope.eu/vendor-list-tcf-v2-0/
-                  // CHECK FOR GOOGLE ADVERTISING PRODUCTS CONSENT. (IAB Vendor ID 755)
-                  let hasGoogleAdvertisingProductsConsent = getNestedObj(() => tcData.vendor.consents[755]); // Check if the user gave Google Advertising Products consent (iab vendor 755)
-
-                  if (hasGoogleAdvertisingProductsConsent) {
-                    let hasPersonalizedProfileConsent = getNestedObj(() => tcData.purpose.consents[3]);
-                    let hasPersonalizedAdsConsent = getNestedObj(() => tcData.purpose.consents[4]); // Check if have add personalization consent Purpose 3 and 4
-
-                    if (hasPersonalizedAdsConsent && hasPersonalizedProfileConsent) {
-                      // Set request non-personalized ads to false.
-                      (adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds = 0;
-                      console.warn('user-allow-cmp-tcf-2.0', 'google', hasGoogleAdvertisingProductsConsent, 'ppc', hasGoogleAdvertisingProductsConsent, 'pac', hasPersonalizedAdsConsent);
-                      ga('send', 'event', 'TCF-2.0', 'prototype', 'user-allow-cmp-tcf-2.0-google', 100);
-                      window.iab_rejected = false;
-                    } else {
-                      // Set request non-personalized ads to true.
-                      (adsbygoogle = window.adsbygoogle || []).requestNonPersonalizedAds = 1;
-                      console.warn('user-reject-cmp-tcf-2.0', 'google', hasGoogleAdvertisingProductsConsent, 'ppc', hasGoogleAdvertisingProductsConsent, 'pac', hasPersonalizedAdsConsent);
-                      ga('send', 'event', 'TCF-2.0', 'prototype', 'user-reject-cmp-tcf-2.0-google', 20);
-                    } // Unpause ads , the user has granted consent for purpose 1 and given google consent.
-
-
-                    (adsbygoogle = window.adsbygoogle || []).pauseAdRequests = 0;
-                  } else {
-                    console.warn('user-reject-cmp-tcf-2.0-google');
-                    ga('send', 'event', 'TCF-2.0', 'prototype', 'user-reject-cmp-tcf-2.0-google', 10);
-                  }
-                } else {
-                  console.warn('user-reject-cmp-tcf-2.0');
-                  ga('send', 'event', 'TCF-2.0', 'prototype', 'user-reject-cmp-tcf-2.0', 0);
-                }
-              }
-            }
-          });
-        });
       } catch (error) {
         console.warn('sticky-ads-error-scroll');
       } //$('#wikipedia').accordion({ selector: {trigger: '.title'} });
@@ -11013,7 +10944,7 @@ class Prototype extends React.Component {
     });
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     console.log('-PROTOTYPE-', this.props);
     delete axios.defaults.headers.common['Authorization'];
     let that = this;
@@ -11026,23 +10957,14 @@ class Prototype extends React.Component {
     let loaded_interval = setInterval(function () {
       let _script_loaded = getNestedObj(() => that.state.loaded) || false;
 
-      let neededscript = 0;
-
       if (!_script_loaded) {
-        Object.keys(window.loaded_script).map(elem => {
-          let loaded_ = window.loaded_script[elem] || false;
-          if (loaded_) neededscript++;
-          if (neededscript === 14) that.setState({
-            loaded: true,
-            componentLoaded: true
-          });
+        if (window.labjs_scripts) that.setState({
+          loaded: true,
+          componentLoaded: true
         });
-<<<<<<< Updated upstream
-=======
         check_user_iab_permissions();
         that.on_script_load_first_page();
         that.on_script_load_second_page();
->>>>>>> Stashed changes
       } else {
         try {
           clearInterval(loaded_interval);
@@ -11050,7 +10972,7 @@ class Prototype extends React.Component {
           console.warn('interval-cleared');
         }
       }
-    }, 500); //this.setState({componentLoaded: true})
+    }, 333); //this.setState({componentLoaded: true})
   }
 
   propsInitData(from = 'props', idata = null) {
@@ -11338,20 +11260,7 @@ class Prototype extends React.Component {
       //$('title').text("Shorten urls and earn money - AdShrink.it");
 
 
-<<<<<<< Updated upstream
-      changeFavicon('https://www.shrink-service.it/ico/favicons.png');
-      if (!that.state.script.donate) that.onScriptLoad('donate', 'https://blockchain.info/Resources/js/pay-now-button.js'); //RedirectCom()
-
-      if (!that.system_popup_bounduary_steps) {
-        $('#system_popup_steps_trigger').popup({
-          hoverable: true
-        });
-        $('#video_tutorial_normal').embed();
-        that.system_popup_bounduary_steps = true;
-      }
-=======
       changeFavicon('https://www.shrink-service.it/ico/favicons.png'); //RedirectCom();
->>>>>>> Stashed changes
     });
     const today = new Date();
     let recaptcha = getNestedObj(() => this.state.recaptcha) || false;
@@ -11500,17 +11409,9 @@ class Prototype extends React.Component {
       size: 'leaderboard'
     }), form_factor === 'Tablet' && /*#__PURE__*/React.createElement(AdsenseBanner, {
       size: 'leaderboard'
-<<<<<<< Updated upstream
-    }), form_factor === 'Smartphone' && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(AdsenseBanner, {
-      size: 'medium_rectangle'
-    }), /*#__PURE__*/React.createElement(AdsenseBanner, {
-      size: 'medium_rectangle'
-    }))), form_factor === 'Smartphone' && /*#__PURE__*/React.createElement(ComponentStaticStepsMessages, null), /*#__PURE__*/React.createElement(SemanticNavContent, {
-=======
     }), form_factor === 'Smartphone' && true === false && /*#__PURE__*/React.createElement(AdsenseBanner, {
       size: 'half_page'
     })), form_factor === 'Smartphone' && /*#__PURE__*/React.createElement(ComponentStaticStepsMessages, null), /*#__PURE__*/React.createElement(SemanticNavContent, {
->>>>>>> Stashed changes
       dev: form_factor,
       data: data,
       type: type,
@@ -11552,18 +11453,6 @@ class Prototype extends React.Component {
     })), /*#__PURE__*/React.createElement("div", {
       className: "sixteen wide column"
     }, /*#__PURE__*/React.createElement(ComponentFirstInfoSegment, null)), /*#__PURE__*/React.createElement("div", {
-      className: "sixteen wide column"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "ui divider"
-    })), /*#__PURE__*/React.createElement("div", {
-      className: "sixteen wide column center aligned " + (form_factor === 'Desktop' || form_factor === 'Tablet' ? 'margin-large' : 'margin-mobile')
-    }, form_factor === 'Desktop' && /*#__PURE__*/React.createElement(AdsenseBanner, {
-      size: 'leaderboard'
-    }), form_factor === 'Tablet' && /*#__PURE__*/React.createElement(AdsenseBanner, {
-      size: 'leaderboard'
-    }), form_factor === 'Smartphone' && /*#__PURE__*/React.createElement(AdsenseBanner, {
-      size: 'medium_rectangle'
-    })), /*#__PURE__*/React.createElement("div", {
       className: "sixteen wide column"
     }, /*#__PURE__*/React.createElement("div", {
       className: "ui divider"
@@ -11657,7 +11546,6 @@ class Prototype extends React.Component {
   }
 
 }
-
 
 ReactDOM.render( /*#__PURE__*/React.createElement(Prototype, {
   dynamic: window.dynamic,
