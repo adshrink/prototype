@@ -11353,7 +11353,7 @@ class Prototype extends React.Component {
       }
     }), /*#__PURE__*/React.createElement(ModalTCF, null), !isEmpty(data) && /*#__PURE__*/React.createElement(ComponentExtraScripts, {
       importNavigatorScript: this.navigatorComponentScripts
-    }), !isEmpty(data) && type !== 'Light' && _adshrink.enabled.iframe && true === true && recaptcha && /*#__PURE__*/React.createElement(ComponentRotationAdv, null), /*#__PURE__*/React.createElement("div", {
+    }), !isEmpty(data) && type !== 'Light' && _adshrink.enabled.iframe && true === false && recaptcha && /*#__PURE__*/React.createElement(ComponentRotationAdv, null), /*#__PURE__*/React.createElement("div", {
       className: "ui grid stackable " + (isEmpty(data) ? 'blurred' : ''),
       id: "app_second_panel"
     }, /*#__PURE__*/React.createElement("div", {
